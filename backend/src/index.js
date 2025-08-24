@@ -3,10 +3,11 @@ import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
 import connectDB from './util/DB.js';
-
+import cors from 'cors';
 import  itemRoutes from './routes/item.routes.js';
 import bidRoutes from './routes/bid.routes.js';
 import orderRoutes from './routes/order.routes.js';
+import inventoryRoutes from './routes/inventory.routes.js';
 import { bidSocketHandler } from './socket/bid.socket.js';
 
 dotenv.config();
@@ -15,12 +16,18 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+//Allow all origins
+app.use(cors());
+
+
 app.use(express.json());
 
 // Routes
 app.use('/api/items', itemRoutes);
 app.use('/api/bids', bidRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 const PORT = process.env.PORT || 5000;
 
