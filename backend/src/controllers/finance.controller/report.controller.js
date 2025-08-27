@@ -1,7 +1,6 @@
-const Report = require("../../models/finance.model/Report.model");
-
+import Report from '../../models/finance.model/Report.model.js';
 // Generate report
-exports.generateReport = async (req, res) => {
+export const generateReport = async (req, res) => {
   try {
     const { type, period, data } = req.body;
     const report = new Report({
@@ -18,7 +17,7 @@ exports.generateReport = async (req, res) => {
 };
 
 // Get all reports
-exports.getReports = async (req, res) => {
+export const getReports = async (req, res) => {
   try {
     const reports = await Report.find();
     res.json(reports);
