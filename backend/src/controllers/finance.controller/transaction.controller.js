@@ -1,7 +1,7 @@
-const Transaction = require("../../models/finance.model/Transaction.model");
+import Transaction from '../../models/finance.model/Transaction.model.js';
 
 // Create transaction
-exports.createTransaction = async (req, res) => {
+export const createTransaction = async (req, res) => {
   try {
     const tx = new Transaction({ ...req.body, userId: req.user.id });
     await tx.save();
@@ -12,7 +12,7 @@ exports.createTransaction = async (req, res) => {
 };
 
 // Get all user transactions
-exports.getTransactions = async (req, res) => {
+export const getTransactions = async (req, res) => {
   try {
     const txs = await Transaction.find({ userId: req.user.id }).populate("paymentMethod");
     res.json(txs);
@@ -22,7 +22,7 @@ exports.getTransactions = async (req, res) => {
 };
 
 // Admin: get all transactions
-exports.getAllTransactions = async (req, res) => {
+export const getAllTransactions = async (req, res) => {
   try {
     const txs = await Transaction.find().populate("userId paymentMethod");
     res.json(txs);

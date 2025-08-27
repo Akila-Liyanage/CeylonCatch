@@ -1,4 +1,4 @@
-const mongoose = require("mongoose"); //provides a structured way to interact with MongoDB
+import mongoose from 'mongoose' //provides a structured way to interact with MongoDB
 
 const invoiceSchema = new mongoose.Schema({
   transactionId: { 
@@ -26,4 +26,5 @@ const invoiceSchema = new mongoose.Schema({
   timestamps: true }
 );
 
-module.exports = mongoose.model("Invoice", invoiceSchema);
+const Invoice = mongoose.model("Invoice", invoiceSchema);
+export default Invoice;

@@ -1,7 +1,7 @@
-const Invoice = require("../../models/finance.model/Invoice.model");
+import Invoice from '../../models/finance.model/Invoice.model.js';
 
 // Generate invoice
-exports.generateInvoice = async (req, res) => {
+export const generateInvoice = async (req, res) => {
   try {
     const { transactionId, customerId, details } = req.body;
     const invoice = new Invoice({
@@ -18,7 +18,7 @@ exports.generateInvoice = async (req, res) => {
 };
 
 // Get customer invoices
-exports.getInvoices = async (req, res) => {
+export const getInvoices = async (req, res) => {
   try {
     const invoices = await Invoice.find({ customerId: req.user.id });
     res.json(invoices);
@@ -28,7 +28,7 @@ exports.getInvoices = async (req, res) => {
 };
 
 // Admin: all invoices
-exports.getAllInvoices = async (req, res) => {
+export const getAllInvoices = async (req, res) => {
   try {
     const invoices = await Invoice.find();
     res.json(invoices);
