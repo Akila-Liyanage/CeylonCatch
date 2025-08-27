@@ -8,6 +8,7 @@ import  itemRoutes from './routes/item.routes.js';
 import bidRoutes from './routes/bid.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import inventoryRoutes from './routes/inventory.routes.js';
+import financeRoutes from './routes/finance.routes.js';
 import { bidSocketHandler } from './socket/bid.socket.js';
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.use('/api/items', itemRoutes);
 app.use('/api/bids', bidRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/finance', financeRoutes);
 
 const PORT = process.env.PORT || 5000;
 
