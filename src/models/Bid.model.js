@@ -1,0 +1,10 @@
+import mongoose from 'mongoose';
+
+const bidSchema = new mongoose.Schema({
+    itemId: { type: String, ref: 'Item', required: true },//for development
+    userId: { type: String, ref: 'User', required: true },//for development
+    bidAmount: { type: Number, required: true },
+}, { timestamps: true });
+
+const Bid = mongoose.model('Bid', bidSchema);
+export default Bid;
