@@ -1,12 +1,20 @@
 import React from 'react'
-import Bids from './Components/bids/Bids'
-import Item from './Components/items/Item'
+import { BrowserRouter as Router, Routes, Route } from 'react-router'
+import Home from './Components/home/Home'
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import ItemList from './Components/Bid/itemList/ItemList'
+import ItemDetails from './Components/Bid/itemDetails/ItemDetails';
 
 const App = () => {
   return (
-    <div>
-      <Item/>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home/>}/>
+        <Route path="/items" element={<ItemList/>}/>
+        <Route path="/items/:id" element={<ItemDetails/>}/>
+      </Routes>
+    </Router>
+    
   )
 }
 

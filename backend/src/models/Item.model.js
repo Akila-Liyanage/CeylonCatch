@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const itemSchema = new mongoose.Schema({
     name: { type: String, required: true },
+    image: {type: String, required: true},
     description: { type: String, required: true },
     startingPrice: { type: Number, required: true, min: 0 },
     currentPrice: { type: Number, required: true, min: 0 },
