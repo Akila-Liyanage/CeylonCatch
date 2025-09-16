@@ -3,7 +3,7 @@ const schema = mongoose.Schema;
 
 const sellerSchema = new schema({
     name: { type: String, required: true },
-    gmail: { type: String, required: true },
+    gmail: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     contact: { type: String, required: true },
     address: { type: String, required: true },

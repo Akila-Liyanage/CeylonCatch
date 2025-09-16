@@ -14,6 +14,7 @@ import StoreIcon from '@mui/icons-material/Store';
 import { useEffect } from 'react';
 import CheckIcon from '@mui/icons-material/Check';
 import Product from '../products/Product';
+import { Link } from 'react-router';
 
 
 const containerVariants = {
@@ -318,21 +319,21 @@ const Home = () => {
           image={Fish}
           title='Fresh Fish'
           desc='Premium quality fresh fish delivered daily from sustainable sources'
-          shopLink='#'
+          shopLink='/items/replace_with_item_id'
           />
           <Product
           category='Weed'
           image={SeaWeed}
           title='Sea Weed'
           desc='Nutrient-rich seaweed harvested sustainably for health and flavor'
-          shopLink='#'
+          shopLink='/items/replace_with_item_id'
           />
           <Product
           category='Oil'
           image={FishOil}
           title='Fish Oil'
           desc='Pure, high-quality fish oil rich in omega-3 fatty acids for optimal health'
-          shopLink='#'
+          shopLink='/items/replace_with_item_id'
           />
         </div>
       </section>

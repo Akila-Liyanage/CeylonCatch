@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router';
 import logo from '../../assets/images/logo.png';
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -14,6 +15,7 @@ const Nav = () => {
   const [query, setQuery] = useState('');
   const [highlight, setHighlight] = useState(-1);
   const [scrolled, setScrolled] = useState(false);
+  const [authUser, setAuthUser] = useState(null);
   const dropdownRef = useRef(null);
   const searchRef = useRef(null);
   const inputRef = useRef(null);
@@ -53,10 +55,15 @@ const Nav = () => {
     document.addEventListener('keydown', onEsc);
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+    // init auth user
+    try { const stored = JSON.parse(localStorage.getItem('authUser') || 'null'); setAuthUser(stored); } catch {}
+    const onStorage = (e) => { if (e.key === 'authUser') { try { setAuthUser(JSON.parse(e.newValue)); } catch { setAuthUser(null); } } };
+    window.addEventListener('storage', onStorage);
     return () => {
       document.removeEventListener('mousedown', onDocClick);
       document.removeEventListener('keydown', onEsc);
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('storage', onStorage);
     };
   }, []);
 
@@ -98,10 +105,21 @@ const Nav = () => {
     exit: { opacity: 0, y: -12, transition: { duration: 0.18 } }
   };
 
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem('authUser');
+    setAuthUser(null);
+    navigate('/');
+  };
+
+  const location = useLocation();
+
   return (
     <div className={`navBar${scrolled ? ' scrolled' : ''}`}>
       <div className="navLeft">
-        <img src={logo} alt="Ceylon Catch" />
+        <Link to="/" aria-label="Go to Home">
+          <img src={logo} alt="Ceylon Catch" />
+        </Link>
       </div>
 
       <div className="navCenter">
@@ -152,14 +170,14 @@ const Nav = () => {
           }
 
           return (
-            <a
+            <Link
               key={link}
-              href="#"
-              className={activeIndex === index ? 'active' : ''}
-              onClick={(e) => { e.preventDefault(); setActiveIndex(index); }}
+              to={link === 'Home' ? '/' : '#'}
+              className={location.pathname === '/' && link === 'Home' ? 'active' : ''}
+              onClick={() => setActiveIndex(index)}
             >
               {link}
-            </a>
+            </Link>
           );
         })}
       </div>
@@ -237,8 +255,17 @@ const Nav = () => {
           </AnimatePresence>
         </div>
 
-        <a href="">Login</a>
-        <a href="">Sign Up</a>
+        {authUser ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontWeight: 600 }}>Hi, {authUser.name}</span>
+            <button onClick={handleLogout} className="logoutBtn">Logout</button>
+          </div>
+        ) : (
+          <>
+            <Link to="/login">Login</Link>
+            <Link to="/signup">Sign Up</Link>
+          </>
+        )}
       </div>
     </div>
   );

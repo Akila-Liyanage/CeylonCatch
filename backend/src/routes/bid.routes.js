@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.post('/', placeBid);
 router.get('/:itemId/highest', getHighestBid);
-router.delete('/:itemId/history', getBidHistory);
+router.get('/:itemId/history', getBidHistory);
 
 export default router;

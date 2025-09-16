@@ -4,6 +4,13 @@ import BuyerRegister from "../models/BuyerRegister.model.js";
 export const registerBuyer = async (req, res) => {
     const { name, email, password, contact, address, btype } = req.body;
     try {
+        if (!name || !email || !password || !contact || !address || !btype) {
+            return res.status(400).json({ error: "All fields are required" });
+        }
+        const existing = await BuyerRegister.findOne({ email });
+        if (existing) {
+            return res.status(409).json({ error: "Email already registered" });
+        }
         const newBuyer = new BuyerRegister({
             name,
             email,
@@ -23,6 +30,9 @@ export const registerBuyer = async (req, res) => {
 export const loginBuyer = async (req, res) => {
     const { email, password } = req.body;
     try {
+        if (!email || !password) {
+            return res.status(400).json({ error: "Email and password are required" });
+        }
         const buyer = await BuyerRegister.findOne({ email });
         if (!buyer) {
             return res.status(404).json({ error: "Buyer not found" });

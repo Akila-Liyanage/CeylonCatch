@@ -189,6 +189,27 @@ body {
   gap: 12px;
 }
 
+.logoutBtn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  color: #ffe7e7;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 160ms ease, background 160ms ease, color 160ms ease;
+}
+.logoutBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+  background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(239,68,68,0.10));
+  color: #fff5f5;
+}
+.logoutBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+}
+
 /* Search icon button */
 .searchIcon {
   position: relative;

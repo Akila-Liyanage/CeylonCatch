@@ -4,6 +4,13 @@ import SellerRegister from "../models/SellerRegister.model.js";
 export const registerSeller = async (req, res) => {
     try {
         const { name, gmail, password, contact, address, product, bnumb} = req.body;
+        if (!name || !gmail || !password || !contact || !address || !product || !bnumb) {
+            return res.status(400).json({ error: "All fields are required" });
+        }
+        const existing = await SellerRegister.findOne({ gmail });
+        if (existing) {
+            return res.status(409).json({ error: "Gmail already registered" });
+        }
         const newSeller = new SellerRegister({
         name,
         gmail,
@@ -24,6 +31,9 @@ export const registerSeller = async (req, res) => {
 export const loginSeller = async (req, res) => {
     try {
         const { gmail, password } = req.body;
+        if (!gmail || !password) {
+            return res.status(400).json({ error: "Gmail and password are required" });
+        }
         const seller = await SellerRegister.findOne({ gmail });
         if (!seller) {
             return res.status(404).json({ error: "Seller not found" });

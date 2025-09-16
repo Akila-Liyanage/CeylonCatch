@@ -6,9 +6,10 @@ const bregiSchema = new schema ({
             required : true , //validate
           },
 
-           gmail : {
+           email : {
             type :  String , //dataType
             required : true , //validate
+            unique: true,
           },
 
           password : {
@@ -17,7 +18,7 @@ const bregiSchema = new schema ({
           },
 
           contact : {
-            type : Number ,
+            type : String ,
             required : true ,
           },
 

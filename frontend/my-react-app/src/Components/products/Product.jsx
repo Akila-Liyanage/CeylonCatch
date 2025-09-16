@@ -1,6 +1,7 @@
 import React from 'react';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import './product.css';
+import { Link } from 'react-router';
 
 const Product = ({
     category = 'Seafood',
@@ -21,12 +22,12 @@ const Product = ({
       <div className="productContent">
         <h3 className="productTitle">{title}</h3>
         <p className="productDescription">{desc}</p>
-        <a href={shopLink} className="shopLink">
-          View Shop
+        <Link to={shopLink} className="shopLink">
+          View Details
           <span className="iconWrapper">
             <ArrowForwardIcon />
           </span>
-        </a>
+        </Link>
       </div>
     </div>
   );

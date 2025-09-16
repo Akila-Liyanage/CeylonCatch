@@ -4,52 +4,69 @@ import Item from '../models/Item.model.js';
 //Place bid
 
 export const placeBid = async (req, res) => {
-    try{
-        const{ itemId, userId, userName, bidAmount} = req.body;
+    try {
+        const { itemId, userId, userName, bidAmount } = req.body;
 
-        const item = await new Item.findById(itemId);
+        if (!itemId || !userId || !userName || typeof bidAmount !== 'number') {
+            return res.status(400).json({ message: 'itemId, userId, userName and numeric bidAmount are required' });
+        }
 
-        if(!item) return res.starus(404).json({message: "Item not found"});
+        const item = await Item.findById(itemId);
+        if (!item) return res.status(404).json({ message: 'Item not found' });
 
-        //Auction closed check
-        if(item.status !== "open") return res.status(400).json({message: "Auction is not open or already closed"});
+        // Prevent seller from bidding on own item (basic authorization)
+        if (String(item.sellerId) === String(userId)) {
+            return res.status(403).json({ message: 'Seller cannot bid on their own item' });
+        }
 
-        //Bid must be higher
-        if(bidAmount <= item.currentPrice) return res.status(400).json({message: "Bid must be higher than currentPrice"});
+        // Auction status and expiry checks
+        const now = new Date();
+        if (item.endTime && now > new Date(item.endTime)) {
+            // Auto-close if expired
+            if (item.status !== 'closed') {
+                item.status = 'closed';
+                await item.save();
+            }
+            return res.status(400).json({ message: 'Auction has ended' });
+        }
+        if (item.status !== 'open') {
+            return res.status(400).json({ message: 'Auction is not open or already closed' });
+        }
 
-        const newBid = new Bid({itemId, userId, userName, bidAmount});
+        if (bidAmount <= item.currentPrice) {
+            return res.status(400).json({ message: 'Bid must be higher than currentPrice' });
+        }
+
+        const newBid = new Bid({ itemId, userId, userName, bidAmount });
         await newBid.save();
 
-        //Update item's current price
         item.currentPrice = bidAmount;
         await item.save();
 
-        //Emit via socket
-        req.io.emit("bidUpdate", {
+        // Emit realtime update
+        req.io.emit('bidUpdate', {
             itemId,
             userName,
             bidAmount,
+            currentPrice: bidAmount,
         });
 
         res.status(201).json(newBid);
-    }catch(err){
-        res.status(500).json({message: err.message});
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 }
 
 //Get highest bid for an item
 
 export const getHighestBid = async (req, res) => {
-    try{
-        const {itemId} = req.body;
-
-        const highestBid = await Bid.findOne({itemId})
-        .sort({bidAmount: -1})
-        .limit(1);
-
-        res.json(highestBid || {message: "No bids yet"});
-    }catch(err){
-        res.status(500).json({message: err.message});
+    try {
+        const { itemId } = req.params;
+        const highestBid = await Bid.findOne({ itemId }).sort({ bidAmount: -1 }).lean();
+        if (!highestBid) return res.status(404).json({ message: 'No bids yet' });
+        res.json(highestBid);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };
 

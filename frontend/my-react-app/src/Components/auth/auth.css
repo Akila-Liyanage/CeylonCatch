@@ -1,0 +1,134 @@
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e6f7ff 0%, #b3e0ff 50%, #89cff0 100%);
+    padding: 24px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 520px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(0, 119, 182, 0.2);
+    border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+    animation: fadeIn 0.6s ease forwards;
+}
+
+.auth-header {
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #0077b6 0%, #00a8e8 100%);
+    color: #fff;
+}
+
+.auth-header h2 {
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+}
+
+.auth-body {
+    padding: 22px 24px 26px;
+}
+
+.role-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.role-tab {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    color: #0f172a;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.role-tab.active {
+    background: #eef2ff;
+    border-color: #1e40af;
+    color: #1e3a8a;
+    box-shadow: 0 6px 14px rgba(30, 64, 175, 0.15);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.input, .select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    outline: none;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.input:focus, .select:focus {
+    border-color: #0077b6;
+    box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.12);
+}
+
+.error {
+    color: #b91c1c;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin: 8px 0 12px;
+}
+
+.submit {
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0077b6 0%, #00a8e8 100%);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 18px rgba(0, 119, 182, 0.25);
+}
+
+.submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(0, 119, 182, 0.32);
+}
+
+.hint {
+    margin-top: 10px;
+    text-align: center;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.link {
+    color: #1e40af;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
