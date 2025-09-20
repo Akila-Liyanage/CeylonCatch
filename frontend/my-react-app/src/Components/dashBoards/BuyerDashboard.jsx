@@ -11,7 +11,10 @@ import {
   FaSignOutAlt,
   FaEdit,
   FaSave,
-  FaTimes
+  FaTimes,
+  FaHistory,
+  FaShoppingCart,
+  FaGavel
 } from 'react-icons/fa';
 import './BuyerDashboard.css';
 
@@ -79,6 +82,16 @@ const BuyerDashboard = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleNavigateToBidHistory = () => {
+    // For now, we'll use a placeholder user ID. In a real app, you'd get this from the buyer data
+    const userId = buyer?._id || 'user123';
+    navigate(`/bidHistory/${userId}`);
+  };
+
+  const handleNavigateToItems = () => {
+    navigate('/items');
   };
 
   if (loading) {
@@ -240,6 +253,59 @@ const BuyerDashboard = () => {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions Section */}
+        <div className="buyer-card">
+          <div className="buyer-card-header">
+            <div className="buyer-card-header-left">
+              <h2>Quick Actions</h2>
+              <p>Access your bidding activities and marketplace features</p>
+            </div>
+          </div>
+
+          <div className="buyer-card-body">
+            <div className="buyer-actions-grid">
+              <button 
+                onClick={handleNavigateToBidHistory}
+                className="buyer-action-btn buyer-action-primary"
+              >
+                <div className="buyer-action-icon">
+                  <FaHistory />
+                </div>
+                <div className="buyer-action-content">
+                  <h3>Bid History</h3>
+                  <p>View your bidding history and track your auctions</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={handleNavigateToItems}
+                className="buyer-action-btn buyer-action-secondary"
+              >
+                <div className="buyer-action-icon">
+                  <FaGavel />
+                </div>
+                <div className="buyer-action-content">
+                  <h3>Browse Items</h3>
+                  <p>Explore available fish lots and place new bids</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={() => navigate('/items')}
+                className="buyer-action-btn buyer-action-tertiary"
+              >
+                <div className="buyer-action-icon">
+                  <FaShoppingCart />
+                </div>
+                <div className="buyer-action-content">
+                  <h3>My Orders</h3>
+                  <p>Track your purchased items and delivery status</p>
+                </div>
+              </button>
             </div>
           </div>
         </div>
