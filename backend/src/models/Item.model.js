@@ -6,6 +6,7 @@ const itemSchema = new mongoose.Schema({
     description: { type: String, required: true },
     startingPrice: { type: Number, required: true, min: 0 },
     currentPrice: { type: Number, required: true, min: 0 },
+    qty: {type: Number, required: true, min: 0},
     status: {
         type: String,
         enum: ['pending','open', 'closed'],

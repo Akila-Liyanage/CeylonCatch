@@ -1,0 +1,296 @@
+/* Buyer Dashboard Custom Styles */
+.buyer-dashboard {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #e9fbfd;
+  background-image: 
+    radial-gradient(#00c2c9 0.5px, transparent 0.5px), 
+    radial-gradient(#00c2c9 0.5px, #e9fbfd 0.5px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.buyer-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e9fbfd;
+  background-image: 
+    radial-gradient(#00c2c9 0.5px, transparent 0.5px), 
+    radial-gradient(#00c2c9 0.5px, #e9fbfd 0.5px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.buyer-loading-content {
+  text-align: center;
+}
+
+.buyer-spinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 3rem;
+  width: 3rem;
+  border-bottom: 2px solid #3b82f6;
+  margin: 0 auto;
+}
+
+.buyer-loading-text {
+  margin-top: 1rem;
+  color: #1d4ed8;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.buyer-header {
+  background: linear-gradient(135deg, #60a5fa 0%, #00c2c9 100%);
+  color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.buyer-header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buyer-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.buyer-header-icon {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.buyer-header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.buyer-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.buyer-logout-btn {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  color: #2563eb;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buyer-logout-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.buyer-logout-icon {
+  margin-right: 0.5rem;
+}
+
+.buyer-main {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.buyer-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.buyer-card-header {
+  background: linear-gradient(135deg, #60a5fa 0%, #00c2c9 100%);
+  padding: 1rem 1.5rem;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buyer-card-header-left h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.buyer-card-header-left p {
+  color: #dbeafe;
+  margin: 0.25rem 0 0 0;
+}
+
+.buyer-edit-btn {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  color: #2563eb;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buyer-edit-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.buyer-edit-icon {
+  margin-right: 0.5rem;
+}
+
+.buyer-edit-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.buyer-save-btn {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  color: #059669;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buyer-save-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.buyer-cancel-btn {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  color: #dc2626;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buyer-cancel-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.buyer-card-body {
+  padding: 1.5rem;
+}
+
+.buyer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .buyer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.buyer-field {
+  display: flex;
+  align-items: flex-start;
+}
+
+.buyer-field-icon {
+  background-color: #dbeafe;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  color: #2563eb;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.buyer-field-content {
+  flex: 1;
+}
+
+.buyer-field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.buyer-field-value {
+  color: #1f2937;
+  margin: 0;
+}
+
+.buyer-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.buyer-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.buyer-textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+  resize: vertical;
+  min-height: 4rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.buyer-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .buyer-header-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .buyer-main {
+    padding: 1rem;
+  }
+  
+  .buyer-card-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .buyer-grid {
+    grid-template-columns: 1fr;
+  }
+}

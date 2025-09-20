@@ -1,0 +1,176 @@
+/* BuyerLogin.css - Custom styles for Buyer Login component */
+
+.buyer-login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background-color: #e9fbfd;
+  background-image: 
+    radial-gradient(#00c2c9 0.5px, transparent 0.5px), 
+    radial-gradient(#00c2c9 0.5px, #e9fbfd 0.5px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.buyer-login-card {
+  width: 100%;
+  max-width: 28rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.buyer-login-header {
+  background: linear-gradient(to right, #60a5fa, #06b6d4);
+  padding: 1.5rem 2rem;
+  text-align: center;
+}
+
+.buyer-login-icon-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.buyer-login-icon-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.75rem;
+  border-radius: 50%;
+}
+
+.buyer-login-icon {
+  color: white;
+  font-size: 1.5rem;
+}
+
+.buyer-login-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+}
+
+.buyer-login-subtitle {
+  color: #dbeafe;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.buyer-login-form {
+  padding: 1.5rem 2rem;
+}
+
+.buyer-login-form-group {
+  margin-bottom: 1rem;
+}
+
+.buyer-login-input-container {
+  position: relative;
+}
+
+.buyer-login-input-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+  color: #3b82f6;
+  font-size: 1.25rem;
+  pointer-events: none;
+}
+
+.buyer-login-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.buyer-login-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.buyer-login-message {
+  padding: 0.75rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.buyer-login-button {
+  width: 100%;
+  background: linear-gradient(to right, #3b82f6, #06b6d4);
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.buyer-login-button:hover {
+  background: linear-gradient(to right, #2563eb, #0891b2);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.buyer-login-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.buyer-login-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buyer-login-footer {
+  background: #f9fafb;
+  padding: 1rem 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.buyer-login-footer-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+  margin: 0;
+}
+
+.buyer-login-footer-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.buyer-login-footer-link:hover {
+  color: #1d4ed8;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .buyer-login-container {
+    padding: 1rem 0.5rem;
+  }
+  
+  .buyer-login-header,
+  .buyer-login-form,
+  .buyer-login-footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

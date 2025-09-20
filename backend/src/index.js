@@ -10,6 +10,8 @@ import orderRoutes from './routes/order.routes.js';
 import inventoryRoutes from './routes/inventory.routes.js';
 import financeRoutes from './routes/finance.routes.js';
 import userRoutes from './routes/user.routes.js';
+import authRoutes from './routes/auth.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 dotenv.config();
 
@@ -45,7 +47,9 @@ app.use('/api/bids', bidRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/finance', financeRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
 
 
 

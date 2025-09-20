@@ -15,6 +15,13 @@ export const createItem = async (req, res) => {
 // Get all items
 export const getItems = async (req, res) => {
     try{
+        // Auto-close any expired auctions before returning list
+        const now = new Date();
+        await Item.updateMany(
+            { endTime: { $lte: now }, status: { $ne: 'closed' } },
+            { $set: { status: 'closed' } }
+        );
+
         const items = await Item.find();
         res.status(200).json(items);
     
@@ -26,9 +33,15 @@ export const getItems = async (req, res) => {
 // Get a single item by ID
 export const getItemById = async (req, res) => {
     try{
-        const item = await Item.findById(req.params.id);
+        let item = await Item.findById(req.params.id);
         if(!item){
             return res.status(404).json({message: 'Item not found'});
+        }
+        // If expired, ensure status is persisted as closed
+        const now = new Date();
+        if (item.endTime && now > new Date(item.endTime) && item.status !== 'closed') {
+            item.status = 'closed';
+            await item.save();
         }
         res.status(200).json(item);
     

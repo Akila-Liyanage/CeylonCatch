@@ -1,40 +1,13 @@
 import mongoose from "mongoose";
-const schema = mongoose.Schema;
-const bregiSchema = new schema ({
-          name : {
-            type :  String , //dataType
-            required : true , //validate
-          },
 
-           email : {
-            type :  String , //dataType
-            required : true , //validate
-            unique: true,
-          },
-
-          password : {
-            type :  String , //dataType
-            required : true , //validate
-          },
-
-          contact : {
-            type : String ,
-            required : true ,
-          },
-
-           address : {
-            type :  String , //dataType
-            required : true , //validate
-          },
-
-           btype : {
-            type :  String , //dataType
-            required : true , //validate
-          },
-
-         
+const bregiSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    gmail: { type: String, required: true, unique: true }, // unique ensures no duplicates
+    password: { type: String, required: true },
+    contact: { type: String, required: true },
+    address: { type: String, required: true },
+    btype: { type: String, required: true },
 });
 
-
-const BuyerRegister = mongoose.model("BuyerRegister",bregiSchema);
-export default BuyerRegister;
+const Buyer  = mongoose.model("BuyerRegister1", bregiSchema);
+export default Buyer;

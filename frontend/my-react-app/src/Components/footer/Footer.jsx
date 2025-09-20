@@ -1,65 +1,42 @@
-import React from 'react'
-import './footer.css'
+// Footer.jsx
+import React from 'react';
+import './footer.css';
+import { motion } from 'framer-motion';
 
 const Footer = () => {
   return (
-    <div>
-        <footer>
-  <div class="newsletter">
-    <h4>Subscribe Newsletter</h4>
-    <h2>Get The Updated News</h2>
-    <form>
-      <input type="email" placeholder="Email" />
-      <button type="submit">Subscribe Now</button>
-    </form>
-  </div>
+    <motion.footer 
+      className="home-footer"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.3 }}
+    >
+      <div className="footer-content">
+        <div className="footer-section">
+          <h3>Ceylon Catch</h3>
+          <p>Fresh seafood delivered directly from the ocean to your table</p>
+        </div>
+        <div className="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Products</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div className="footer-section">
+          <h4>Contact Info</h4>
+          <p>123 Ocean Avenue, Colombo</p>
+          <p>+94 11 234 5678</p>
+          <p>info@ceyloncatch.com</p>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <p>&copy; {new Date().getFullYear()} Ceylon Catch. All rights reserved.</p>
+      </div>
+    </motion.footer>
+  );
+};
 
-  <div class="footer-links">
-    <div class="quick-links">
-      <h4>Quick Links</h4>
-      <ul>
-        <li>Home</li>
-        <li>About Us</li>
-        <li>Destination</li>
-        <li>Contact</li>
-      </ul>
-    </div>
-
-    <div class="other-pages">
-      <h4>Other Pages</h4>
-      <ul>
-        <li>Privacy & Policy</li>
-        <li>Terms of Use</li>
-        <li>Disclaimer</li>
-        <li>FAQ</li>
-      </ul>
-    </div>
-
-    <div class="contact-info">
-      <h4>Contact Info</h4>
-      <p>Jl. Raya Mas Ubud No.88, Gianyar, Bali, Indonesia - 80571</p>
-      <p>+62 361 154874</p>
-      <p>contact@domain.com</p>
-    </div>
-
-    <div class="closer">
-      <h4>Closer With Us Now!</h4>
-      <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</p>
-      <button>+62 361 154874</button>
-    </div>
-  </div>
-
-   <div class="footer-bottom">
-    <div class="logo">
-      <span>FIQUA</span>
-    </div>
-    <p>Fish Farm Template Kit by Jegtheme</p>
-    <p>Copyright © 2021. All rights reserved.</p>
-  </div>
-</footer>
-
-    </div>
-  )
-}
-
-export default Footer
+export default Footer;

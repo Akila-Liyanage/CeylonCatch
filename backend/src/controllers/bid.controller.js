@@ -81,3 +81,19 @@ export const getBidHistory = async (req, res) => {
         res.status(500).json({message: err.message});
     }
 };
+
+//Get bid history for specific user
+
+export const getUserBidHistory = async (req, res) => {
+    try{
+        const { userId } = req.params;
+
+        const bids = await Bid.find({ userId })
+        .populate("ItemId", "name image description") // show item details
+        .sort({createdAt: -1});
+
+        res.status(200).json(bids);
+    }catch(err){
+        res.status(500).json({message: "Error fetching bid history", err})
+    }
+}

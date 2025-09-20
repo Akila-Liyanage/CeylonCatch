@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
-const schema = mongoose.Schema;
 
-const sellerSchema = new schema({
+const sellerSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    gmail: { type: String, required: true, unique: true },
+    gmail: { type: String, required: true },
     password: { type: String, required: true },
     contact: { type: String, required: true },
     address: { type: String, required: true },
@@ -11,5 +10,5 @@ const sellerSchema = new schema({
     bnumb: { type: String, required: true },
 });
 
-const SellerRegister = mongoose.model("SellerRegister", sellerSchema);
-export default SellerRegister;
+const Seller = mongoose.model("SellerRegister", sellerSchema);
+export default Seller;

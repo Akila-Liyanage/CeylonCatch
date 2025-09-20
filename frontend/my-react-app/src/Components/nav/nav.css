@@ -1,7 +1,7 @@
 :root{
   --nav-height: 84px;
   --nav-padding: 16px 22px;
-  --accent: #156eae;
+  --accent: #00c2c9;
   --muted-nav: rgba(255,255,255,0.9);
   --dropdown-bg: #ffffff;
   --dropdown-text: #072a2c;
@@ -42,13 +42,25 @@ body {
   align-items: center;
   z-index: 65; /* Higher than mobile menu */
 }
-.navLeft img {
+.navLeft img,
+.logo {
   display: block;
-  width: 150px;
-  height: auto;
+  width: auto;
+  height: 80px;
+  max-width: 160px;
   user-select: none;
   -webkit-user-drag: none;
   cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.navLeft img:hover,
+.logo:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Center links */
@@ -64,6 +76,7 @@ body {
 
 /* Links - base (remove default underlines explicitly) */
 .navCenter > a,
+.nav-link,
 .pages-btn,
 .dropdown-toggle {
   color: var(--muted-nav);
@@ -90,6 +103,7 @@ body {
 
 /* Hover state: change font color on hover to #00c2c9 */
 .navCenter > a:hover,
+.nav-link:hover,
 .pages-btn:hover,
 .dropdown-toggle:hover {
   color: var(--link-accent);
@@ -305,11 +319,74 @@ body {
   transform: translateY(-2px);
 }
 
+/* Welcome message styling */
+.welcome-message {
+  background: linear-gradient(135deg, rgba(0,194,201,0.15), rgba(0,194,201,0.08));
+  color: #00c2c9;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid rgba(0,194,201,0.2);
+  box-shadow: 0 4px 12px rgba(0,194,201,0.1);
+  transition: all 200ms ease;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.welcome-message:hover {
+  background: linear-gradient(135deg, rgba(0,194,201,0.2), rgba(0,194,201,0.12));
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,194,201,0.15);
+}
+
+/* Dashboard button styling */
+.dashboard-btn {
+  background: linear-gradient(135deg, #00c2c9, #0891b2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms ease;
+  box-shadow: 0 4px 12px rgba(0,194,201,0.3);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.dashboard-btn:hover {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,194,201,0.4);
+  color: white;
+}
+
+/* Logout button styling */
+.logout-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms ease;
+  box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+}
+
+.logout-btn:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239,68,68,0.4);
+}
+
 /* Scrolled state */
 .navBar.scrolled {
-  background: rgba(3,18,22,0.64);
-  box-shadow: 0 8px 30px rgba(2,12,20,0.28);
-  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,0.82);
+  box-shadow: 0 8px 26px rgba(2,12,20,0.10);
+  backdrop-filter: blur(8px);
 }
 
 /* Added searchbar overlay + panel + suggestions styles */
@@ -507,8 +584,10 @@ body {
     gap: 12px; 
     font-size: 15px; 
   }
-  .navLeft img { 
-    width: 132px; 
+  .navLeft img,
+  .logo { 
+    height: 70px;
+    max-width: 140px;
   }
 }
 
@@ -550,5 +629,30 @@ body {
     margin-top: 16px;
     background: rgba(255,255,255,0.05);
     border-radius: 8px;
+  }
+  
+  /* Mobile welcome message adjustments */
+  .welcome-message {
+    font-size: 12px;
+    padding: 6px 12px;
+    margin: 0 4px;
+  }
+  
+  .dashboard-btn,
+  .logout-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+    margin: 0 2px;
+  }
+  
+  /* Mobile logo adjustments */
+  .navLeft img,
+  .logo {
+    height: 60px;
+    max-width: 120px;
+  }
+  
+  .navLeft span {
+    font-size: 1rem;
   }
 }

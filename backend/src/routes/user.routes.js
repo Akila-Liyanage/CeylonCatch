@@ -1,11 +1,13 @@
-import express from "express";
-import { registerSeller, loginSeller } from "../controllers/seller.controller.js";
-import {registerBuyer, loginBuyer} from "../controllers/buyer.controller.js"
-const router = express.Router();
+import express from 'express';
+import { getSeller, getBuyer, updateSeller, updateBuyer } from '../controllers/user.controller.js';
 
-router.post("/sellerregister", registerSeller);
-router.post("/sellerlogin", loginSeller);
-router.post("/buyerregister", registerBuyer);
-router.post("/buyerlogin", loginBuyer);
+const router = express.Router();
+// Seller routes
+router.get("/seller-by-email/:email", getSeller);
+router.put("/seller-by-email/:email", updateSeller);
+
+// Buyer routes
+router.get("/buyer-by-email/:email", getBuyer);
+router.put("/buyer-by-email/:email", updateBuyer);
 
 export default router;

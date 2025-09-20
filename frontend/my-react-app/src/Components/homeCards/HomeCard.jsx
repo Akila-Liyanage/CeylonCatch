@@ -4,16 +4,25 @@ import CardMembershipIcon from '@mui/icons-material/CardMembership';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CloseIcon from '@mui/icons-material/Close';
 import { Link } from "react-router";
-
 import './homecard.css';
 
 const HomeCard = ({ 
   title = 'Certified Farm', 
   description = 'Fresh, sustainably-sourced fish from certified farms — quality you can trust delivered to your door.',
   ribbon = 'Trusted',
-  Icon = CardMembershipIcon // allow injecting a different icon component
+  Icon = CardMembershipIcon, // allow injecting a different icon component
+  modalExtras = [
+    "Fresh daily catch from trusted suppliers",
+    "Sustainably sourced & quality-checked",
+    "Fast delivery across local markets"
+  ],
+  modalActions = [
+    { label: "Bid Now", path: "/items", type: "primary" },
+    { label: "Order Now", action: () => {}, type: "secondary" }
+  ]
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: -200, y: -200 });
   const idSafe = title.replace(/\s+/g, '-').toLowerCase();
 
   useEffect(() => {
@@ -28,6 +37,13 @@ const HomeCard = ({
     document.body.style.overflow = isOpen ? 'hidden' : '';
   }, [isOpen]);
 
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setMousePosition({ x, y });
+  };
+
   return (
     <>
       <motion.article
@@ -36,21 +52,14 @@ const HomeCard = ({
         tabIndex={0}
         aria-label={`${title} card`}
         onClick={() => setIsOpen(true)}
-        onMouseMove={(e) => {
-          const target = e.currentTarget;
-          const rect = target.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          target.style.setProperty('--mx', `${x}px`);
-          target.style.setProperty('--my', `${y}px`);
-        }}
-        onMouseLeave={(e) => {
-          const target = e.currentTarget;
-          target.style.removeProperty('--mx');
-          target.style.removeProperty('--my');
-        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setMousePosition({ x: -200, y: -200 })}
         onKeyDown={(e) => { if (e.key === 'Enter') setIsOpen(true); }}
         role="button"
+        style={{
+          '--mx': `${mousePosition.x}px`,
+          '--my': `${mousePosition.y}px`
+        }}
       >
         <div className="cardTop">
           <motion.div className="iconWrap" layoutId={`icon-${idSafe}`} aria-hidden="true">
@@ -65,7 +74,7 @@ const HomeCard = ({
         </div>
 
         <div className="cardBottom">
-          <a className="readMore" href="#" onClick={(e)=>e.preventDefault()}>
+          <a className="readMore" href="#" onClick={(e) => e.preventDefault()}>
             Read More
             <ArrowForwardIcon className="arrowIcon" />
           </a>
@@ -112,14 +121,35 @@ const HomeCard = ({
                   <p className="modalDescription">{description}</p>
 
                   <div className="modalExtras">
-                    <p>• Fresh daily catch from trusted suppliers</p>
-                    <p>• Sustainably sourced & quality-checked</p>
-                    <p>• Fast delivery across local markets</p>
+                    {modalExtras.map((extra, index) => (
+                      <p key={index}>• {extra}</p>
+                    ))}
                   </div>
 
                   <div className="modalActions">
-                    <Link to="/items" className="learnMore" onClick={() => setIsOpen(false)}>Bid Now</Link>
-                    <button className="ContactUs" onClick={() => setIsOpen(false)}>Order Now</button>
+                    {modalActions.map((action, index) => (
+                      action.path ? (
+                        <Link 
+                          key={index}
+                          to={action.path} 
+                          className={action.type === "primary" ? "learnMore" : "ContactUs"}
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {action.label}
+                        </Link>
+                      ) : (
+                        <button
+                          key={index}
+                          className={action.type === "primary" ? "learnMore" : "ContactUs"}
+                          onClick={() => {
+                            setIsOpen(false);
+                            action.action();
+                          }}
+                        >
+                          {action.label}
+                        </button>
+                      )
+                    ))}
                   </div>
                 </div>
               </motion.div>

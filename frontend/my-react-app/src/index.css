@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Global theme and base styles */
+
+:root{
+  --bg-deep: #f5fcfd; /* light aqua base */
+  --text: #0f172a;   /* dark text on light */
+  --muted: #475569;  /* slate gray */
+  --accent: #00c2c9; /* aqua primary */
+  --accent-2: #8ae9ec; /* soft aqua secondary */
+}
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root{
+  height: 100%;
+}
+
+body{
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(0,194,201,0.08), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(138,233,236,0.12), transparent 60%),
+    linear-gradient(180deg, var(--bg-deep), #ffffff);
+  color: var(--text);
+  font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth scrolling */
+html{
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar styling (webkit) */
+*::-webkit-scrollbar{
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb{
+  background: rgba(0,194,201,0.35);
+  border-radius: 10px;
+}
+*::-webkit-scrollbar-track{
+  background: rgba(0,0,0,0.04);
+}
+
+/* Utility classes */
+.container{
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.visually-hidden{
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+/* Aqua utility styles */
+.btn-aqua{
+  display: inline-block;
+  background: linear-gradient(135deg, var(--accent) 0%, #00939a 100%);
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(0,194,201,0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-aqua:hover{ transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,194,201,0.34); }
+.link-aqua{ color: var(--accent); text-decoration: none; }
+.link-aqua:hover{ text-decoration: underline; }
+
+

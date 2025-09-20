@@ -1,341 +1,541 @@
-:root{
-  --card-bg: rgba(255,255,255,0.04);
-  --card-border: rgba(255,255,255,0.06);
-  --accent: #00c2c9; /* requested accent */
-  --muted-text: #9fb8bb;
-  --glass: rgba(255,255,255,0.03);
-}
+/* homecard.css - Enhanced default appearance with hover colors */
 
-/* use site variables (fall back values provided) */
+/* Use CSS variables from home.css */
 :root {
-  --card-bg-fallback: rgba(255,255,255,0.02);
-  --card-border-fallback: rgba(255,255,255,0.04);
-  --accent-fallback: #00c2c9;
-  --accent-2-fallback: #ff7a59;
-  --muted-text-fallback: #9fb8bb;
+  --bg-deep: #0a1929;
+  --nav-glass: rgba(10, 25, 41, 0.9);
+  --accent: #00c2c9;
+  --accent-light: #4fd1d6;
+  --accent-lighter: #8ae9ec;
+  --muted: #a8b5c1;
+  --white: #ffffff;
+  --card-bg: rgba(19, 47, 76, 0.7);
+  --text-primary: #e0e0e0;
+  --text-secondary: #a8b5c1;
+  --shadow-light: rgba(0, 0, 0, 0.3);
+  --shadow-medium: rgba(0, 0, 0, 0.4);
+  --section-bg: #132f4c;
 }
 
-/* Card base - darker glass to match hero */
-.card{
-  width: 320px;
-  max-width: 100%;
-  border-radius: 14px;
-  margin: 50px 0;
-  padding: 18px;
-  /* darker glass using hero colors */
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(2,8,10,0.12)) !important;
-  border: 1px solid rgba(255,255,255,0.04);
-  box-shadow: 0 18px 48px rgba(2,12,20,0.5);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: transform 320ms cubic-bezier(.16,.84,.44,1), box-shadow 320ms ease, background 320ms ease !important;
-  position: relative;
-  overflow: hidden;
+/* Card base - FORCING DARK THEME WITH HIGH SPECIFICITY */
+.card {
+  width: 320px !important;
+  max-width: 100% !important;
+  border-radius: 16px !important;
+  margin: 50px 0 !important;
+  padding: 24px !important;
+  /* FORCING DARK BACKGROUND */
+  background: linear-gradient(145deg, #132f4c, #0a1929) !important;
+  border: 1px solid #00c2c9 !important;
+  /* FORCING ENHANCED SHADOWS */
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.6) !important,
+    0 12px 30px rgba(0, 194, 201, 0.4) !important,
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  transform: translateY(-4px) scale(1.01) !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+  /* FORCE COLORS */
+  color: #ffffff !important;
 }
 
-/* animated gradient border + glass sheen */
-.card::before{
+/* ENHANCED BORDER GLOW - NOW VISIBLE BY DEFAULT */
+.card::before {
   content: "";
   position: absolute;
   inset: 0;
   padding: 1px;
-  border-radius: 14px;
-  background: conic-gradient(from 180deg at 50% 50%, rgba(0,194,201,0.55), rgba(255,255,255,0.06), rgba(0,194,201,0.28), rgba(255,255,255,0.06), rgba(0,194,201,0.55)) !important;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0) !important;
+  border-radius: 16px;
+  background: linear-gradient(135deg, 
+    var(--accent) 0%, 
+    var(--accent-light) 25%, 
+    rgba(255, 255, 255, 0.15) 50%, 
+    var(--accent-light) 75%, 
+    var(--accent) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  opacity: 0.55;
-  filter: drop-shadow(0 8px 30px rgba(0,194,201,0.18));
-  transition: opacity 280ms ease, filter 280ms ease;
+  /* NOW VISIBLE BY DEFAULT */
+  opacity: 0.8;
+  animation: borderPulse 3s ease-in-out infinite alternate;
 }
-.card::after{
+
+@keyframes borderPulse {
+  0% { opacity: 0.6; }
+  100% { opacity: 0.9; }
+}
+
+/* ENHANCED HIGHLIGHT - NOW ACTIVE BY DEFAULT */
+.card::after {
   content: "";
   position: absolute;
-  inset: -1px;
-  background:
-    /* mouse-follow highlights using CSS vars set by JS */
-    radial-gradient(180px 120px at var(--mx, -200px) var(--my, -200px), rgba(255,255,255,0.12), transparent 60%),
-    radial-gradient(220px 160px at calc(var(--mx, -200px) + 60px) calc(var(--my, -200px) + 40px), rgba(0,194,201,0.10), transparent 70%),
-    /* existing ambient glows */
-    radial-gradient(1200px 150px at -10% -20%, rgba(255,255,255,0.06), transparent 40%),
-    radial-gradient(800px 120px at 120% 120%, rgba(0,194,201,0.08), transparent 60%);
-  mix-blend-mode: screen;
+  inset: 0;
+  background: 
+    /* Centered ambient glow */
+    radial-gradient(350px 250px at 50% 40%, rgba(0, 194, 201, 0.12), transparent 60%),
+    radial-gradient(450px 350px at 60% 60%, rgba(255, 255, 255, 0.06), transparent 70%),
+    /* Corner highlights */
+    radial-gradient(200px 150px at 20% 20%, rgba(0, 194, 201, 0.08), transparent 50%);
   pointer-events: none;
-  opacity: 0.6;
-  transition: transform 360ms ease, opacity 240ms ease, background-position 120ms ease;
+  /* NOW VISIBLE BY DEFAULT */
+  opacity: 1;
+  border-radius: 16px;
 }
 
-/* Interactive lift + subtle tilt */
+/* NEW HOVER STATE - EVEN MORE ENHANCED */
 .card:focus,
-.card:hover{
-  transform: translateY(-12px) rotate(-0.6deg) scale(1.02);
-  box-shadow: 0 36px 80px rgba(2,12,20,0.62);
-  background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(2,8,10,0.10));
+.card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 
+    0 35px 70px rgba(0, 0, 0, 0.5),
+    0 15px 35px rgba(0, 194, 201, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: linear-gradient(145deg, rgba(19, 47, 76, 1), rgba(10, 25, 41, 0.98));
   outline: none;
 }
-.card:hover::before{ opacity: 0.9; filter: drop-shadow(0 14px 46px rgba(0,194,201,0.22)); }
-.card:hover::after{ transform: translateY(-6px); opacity: 0.85; }
-.card:focus-visible{ outline: none; }
 
-/* micro-interactions on content */
-.card .iconWrap{ transition: transform 200ms ease, box-shadow 200ms ease; }
-.card:hover .iconWrap{ transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,194,201,0.18) inset; }
-.card .cardCenter h2{ transition: text-shadow 200ms ease; }
-.card:hover .cardCenter h2{ text-shadow: 0 6px 22px rgba(0,0,0,0.26); }
+.card:hover::before { 
+  opacity: 1;
+  animation: none;
+}
 
-/* Top area with circular icon */
-.cardTop{
+.card:hover::after { 
+  background: 
+    radial-gradient(400px 300px at 50% 40%, rgba(0, 194, 201, 0.18), transparent 60%),
+    radial-gradient(500px 400px at 60% 60%, rgba(255, 255, 255, 0.08), transparent 70%),
+    radial-gradient(250px 200px at 20% 20%, rgba(0, 194, 201, 0.12), transparent 50%);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* Top area with icon */
+.cardTop {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  margin-bottom: 8px;
 }
 
-/* icon circle */
-.iconWrap{
-  width: 84px;
-  height: 84px;
-  border-radius: 12px;
-  display: inline-grid;
-  place-items: center;
-  background: linear-gradient(180deg, rgba(0,194,201,0.12), rgba(0,194,201,0.06));
-  border: 1px solid rgba(0,194,201,0.08);
-  box-shadow: 0 8px 24px rgba(0,194,201,0.06) inset;
-  position: relative;
-  z-index: 1;
+/* ENHANCED ICON CONTAINER - FORCING DARK THEME */
+.iconWrap {
+  width: 85px !important;
+  height: 85px !important;
+  border-radius: 22px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  /* FORCING DARK BACKGROUND WITH AQUA ACCENT */
+  background: linear-gradient(135deg, rgba(0, 194, 201, 0.3), rgba(79, 209, 214, 0.2)) !important;
+  border: 1px solid #00c2c9 !important;
+  /* FORCING GLOW SHADOWS */
+  box-shadow: 
+    0 12px 25px rgba(0, 194, 201, 0.4) !important,
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  position: relative !important;
+  transform: scale(1.03) !important;
+  transition: all 0.3s ease !important;
 }
-.iconWrap::after{
+
+/* ENHANCED GLOW - NOW VISIBLE BY DEFAULT */
+.iconWrap::after {
   content: "";
   position: absolute;
   inset: -2px;
   border-radius: inherit;
-  background: radial-gradient(120px 80px at 30% 20%, rgba(0,194,201,0.25), transparent 60%);
-  filter: blur(10px);
+  background: radial-gradient(circle at 30% 20%, rgba(0, 194, 201, 0.5), transparent 70%);
+  opacity: 0.7;
   z-index: -1;
-}
-.cardIcon{
-  color: var(--accent, var(--accent-fallback));
-  font-size: 40px !important;
+  filter: blur(8px);
 }
 
-/* small ribbon badge */
-.ribbon{
-  background: linear-gradient(90deg, var(--accent-2, var(--accent-2-fallback)), rgba(255,255,255,0.03));
-  color: #fff;
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  align-self: start;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+.card:hover .iconWrap {
+  transform: scale(1.06);
+}
+
+.card:hover .iconWrap::after {
+  opacity: 0.9;
+  filter: blur(10px);
+}
+
+.cardIcon {
+  color: var(--accent-light);
+  font-size: 38px !important;
+  filter: drop-shadow(0 3px 6px rgba(0, 194, 201, 0.4));
+}
+
+/* ENHANCED RIBBON - BRIGHTER BY DEFAULT */
+.ribbon {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--bg-deep);
+  font-size: 11px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  /* ENHANCED DEFAULT SHADOW */
+  box-shadow: 0 6px 15px rgba(0, 194, 201, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 /* Center content */
-.cardCenter h2{
-  margin: 6px 0 6px 0;
-  font-size: 20px;
-  color: #fff;
-}
-.cardCenter p{
-  margin: 0;
-  color: var(--muted, var(--muted-text-fallback));
-  font-size: 14px;
-  line-height: 1.45;
+.cardCenter {
+  flex: 1;
 }
 
-/* Bottom action */
-.cardBottom{
-  margin-top: 6px;
+/* ENHANCED TITLE - FORCING WHITE COLOR WITH GLOW */
+.cardCenter h2 {
+  margin: 0 0 12px 0 !important;
+  font-size: 22px !important;
+  /* FORCING WHITE WITH GLOW */
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.3px !important;
+  line-height: 1.3 !important;
+  /* FORCING GLOW EFFECT */
+  text-shadow: 0 2px 12px rgba(0, 194, 201, 0.6) !important;
+}
+
+.card:hover .cardCenter h2 {
+  text-shadow: 0 3px 16px rgba(0, 194, 201, 0.6);
+}
+
+.cardCenter p {
+  margin: 0 !important;
+  /* FORCING BRIGHT TEXT COLOR */
+  color: #e0e0e0 !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+}
+
+/* Bottom action area */
+.cardBottom {
+  margin-top: 8px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
-/* Read more link styled as pill button */
-.readMore{
+/* ENHANCED READ MORE BUTTON - REDUCED SHINE */
+.readMore {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: transparent;
-  color: var(--accent, var(--accent-fallback));
+  gap: 8px;
+  /* LESS PROMINENT BACKGROUND */
+  background: rgba(0, 194, 201, 0.12);
+  color: var(--accent-light);
   text-decoration: none;
   font-weight: 600;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,194,201,0.12);
-  transition: background 200ms ease, color 200ms ease, transform 160ms ease, box-shadow 200ms ease;
-}
-.readMore .arrowIcon{
-  font-size: 18px !important;
-  color: var(--accent, var(--accent-fallback));
-  transition: transform 200ms ease, color 200ms ease;
+  font-size: 14px;
+  padding: 11px 18px;
+  border-radius: 25px;
+  border: 1px solid rgba(0, 194, 201, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  /* REDUCED GLOW */
+  box-shadow: 0 2px 6px rgba(0, 194, 201, 0.1);
 }
 
-/* hover/focus for CTA */
+.readMore .arrowIcon {
+  font-size: 16px !important;
+  color: var(--accent-light);
+  transition: transform 0.3s ease;
+}
+
 .readMore:hover,
-.readMore:focus{
-  background: var(--accent, var(--accent-fallback));
-  color: var(--bg-deep, #05232b);
-  box-shadow: 0 20px 46px rgba(0,194,201,0.14);
-  transform: translateY(-6px);
+.readMore:focus {
+  background: var(--accent);
+  color: var(--bg-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 194, 201, 0.4);
 }
+
 .readMore:hover .arrowIcon,
-.readMore:focus .arrowIcon{
-  color: var(--bg-deep, #05232b);
-  transform: translateX(4px);
+.readMore:focus .arrowIcon {
+  color: var(--bg-deep);
+  transform: translateX(3px);
 }
 
-/* small decorative underline accent when focused (keyboard) */
-.card:focus::after{
-  content: "";
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 10px;
-  height: 4px;
-  background: linear-gradient(90deg, transparent 0%, var(--accent, var(--accent-fallback)) 50%, transparent 100%);
-  border-radius: 999px;
-  opacity: 0.9;
-}
-
-/* modal overlay */
-.cardModalOverlay{
-  /* stronger, warmer dim so modal content reads clearly */
+/* Modal styles */
+.cardModalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(1,8,10,0.78); /* increased opacity */
+  background: rgba(10, 25, 41, 0.85);
   z-index: 2000;
-  backdrop-filter: blur(4px) saturate(1.05);
+  backdrop-filter: blur(8px) saturate(1.2);
 }
 
-/* modal container (centers the shared layout) */
-.cardModal{
+.cardModal {
   position: fixed;
   inset: 0;
-  display: grid;
-  place-items: center;
-  z-index: 2001;
-  padding: 28px;
-  pointer-events: auto;
-}
-
-/* the element matched by layoutId (expanded card) */
-.modalInner{
-  width: min(960px, 96%);
-  max-height: 90vh;
-  overflow: auto;
-  border-radius: 14px;
-
-  /* darker, higher-contrast panel to match hero and improve legibility */
-  background: linear-gradient(180deg, rgba(3,18,20,0.96), rgba(2,10,12,0.92));
-  border: 1px solid rgba(255,255,255,0.03);
-  box-shadow: 0 40px 140px rgba(2,12,20,0.86);
-  padding: 20px;
-  color: #ffffff; /* ensure default text is white */
-}
-
-/* top row inside modal */
-.modalTop{
   display: flex;
   align-items: center;
-  gap: 18px;
+  justify-content: center;
+  z-index: 2001;
+  padding: 20px;
+}
+
+.modalInner {
+  width: min(900px, 95%);
+  max-height: 85vh;
+  overflow: auto;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(19, 47, 76, 0.95), rgba(10, 25, 41, 0.98));
+  border: 1px solid rgba(0, 194, 201, 0.2);
+  box-shadow: 
+    0 40px 80px rgba(0, 0, 0, 0.5),
+    0 8px 25px rgba(0, 194, 201, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 32px;
+  color: var(--text-primary);
+}
+
+.modalTop {
+  display: flex;
+  align-items: center;
+  gap: 20px;
   position: relative;
+  padding-right: 50px;
+  margin-bottom: 20px;
 }
 
-/* enlarge icon in modal */
-.modalIcon{
-  width: 110px;
-  height: 110px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(180deg, rgba(0,194,201,0.14), rgba(0,194,201,0.06));
-  border: 1px solid rgba(0,194,201,0.08);
+.modalIcon {
+  width: 100px;
+  height: 100px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0, 194, 201, 0.2), rgba(79, 209, 214, 0.15));
+  border: 1px solid rgba(0, 194, 201, 0.3);
+  box-shadow: 
+    0 12px 30px rgba(0, 194, 201, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
-.modalIcon .cardIcon { font-size: 54px !important; color: var(--accent, #00c2c9); }
 
-/* title style in modal */
-.modalTitle{
+.modalIcon .cardIcon { 
+  font-size: 48px !important; 
+  color: var(--accent);
+  filter: drop-shadow(0 2px 6px rgba(0, 194, 201, 0.4));
+}
+
+.modalTitle {
   font-size: 28px;
   margin: 0;
-  color: #ffffff; /* ensure high contrast */
+  color: var(--white);
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  line-height: 1.3;
 }
 
-/* close button */
-.modalCloseBtn{
+.modalCloseBtn {
   position: absolute;
-  right: 6px;
-  top: 6px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.03);
-  color: #cfeff0; /* visible but subtle */
+  right: 0;
+  top: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: background 160ms ease, color 160ms ease;
-}
-.modalCloseBtn:hover{ background: rgba(255,255,255,0.04); color: #fff; }
-
-/* modal body */
-.modalBody{
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px dashed rgba(255,255,255,0.04);
-  color: #cfeff0; /* readable secondary text */
-}
-.modalDescription{
-  font-size: 16px;
-  color: #e6fbfb; /* slightly brighter for better contrast */
-  margin-bottom: 12px;
-}
-.modalExtras p{
-  margin: 6px 0;
-  color: #bfe8e8; /* lighter muted */
-}
-
-/* actions */
-.modalActions{
+  padding: 10px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
   display: flex;
-  gap: 12px;
-  margin-top: 18px;
-}
-.modalActions .learnMore,
-.modalActions .ContactUs{
-  text-decoration: none;
-  padding: 12px 22px;
-  border-radius: 999px;
-}
-.modalActions .learnMore{
-  background: var(--accent, var(--accent-fallback));
-  color: #05232b;
-  border: none;
-  box-shadow: 0 16px 38px rgba(0,194,201,0.22);
-  transition: transform 160ms ease, box-shadow 200ms ease, filter 200ms ease;
-}
-.modalActions .learnMore:hover{
-  transform: translateY(-3px);
-  box-shadow: 0 22px 50px rgba(0,194,201,0.28);
-  filter: saturate(1.05);
-}
-.modalActions .ContactUs{
-  background: rgba(255,255,255,0.06);
-  color: #e6fbfb;
-  border: 1px solid rgba(255,255,255,0.08);
-  transition: transform 160ms ease, background 200ms ease, box-shadow 200ms ease;
-}
-.modalActions .ContactUs:hover{
-  transform: translateY(-3px);
-  background: rgba(255,255,255,0.12);
-  box-shadow: 0 16px 40px rgba(0,0,0,0.24);
+  align-items: center;
+  justify-content: center;
 }
 
-/* responsive tweaks */
-@media (max-width: 640px){
-  .card{ padding: 14px; width: 100%; }
-  .iconWrap{ width: 70px; height: 70px; }
-  .cardIcon{ font-size: 36px !important; }
-  .modalInner{ padding: 14px; }
-  .modalIcon{ width: 84px; height: 84px; }
-  .modalIcon .cardIcon{ font-size: 36px !important; }
-  .modalTitle{ font-size: 20px; }
+.modalCloseBtn:hover { 
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  transform: scale(1.05);
+}
+
+.modalBody {
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 194, 201, 0.15);
+}
+
+.modalDescription {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.modalExtras {
+  margin: 20px 0;
+}
+
+.modalExtras p {
+  margin: 10px 0;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(0, 194, 201, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+
+.modalExtras p::before {
+  content: "✓";
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.modalActions .learnMore,
+.modalActions .ContactUs {
+  text-decoration: none;
+  padding: 14px 28px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+}
+
+.modalActions .learnMore {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--bg-deep);
+  box-shadow: 0 8px 20px rgba(0, 194, 201, 0.3);
+}
+
+.modalActions .learnMore:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 194, 201, 0.4);
+  filter: brightness(1.1);
+}
+
+.modalActions .ContactUs {
+  background: transparent;
+  color: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.modalActions .ContactUs:hover {
+  transform: translateY(-3px);
+  background: var(--accent);
+  color: var(--bg-deep);
+  box-shadow: 0 8px 20px rgba(0, 194, 201, 0.3);
+}
+
+/* Custom scrollbar */
+.modalInner::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modalInner::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.modalInner::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border-radius: 4px;
+}
+
+.modalInner::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-light);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .modalTop {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-right: 0;
+  }
+  
+  .modalCloseBtn {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+  }
+  
+  .modalActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .modalActions .learnMore,
+  .modalActions .ContactUs {
+    width: 100%;
+  }
+  
+  .modalInner {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .card {
+    width: 100%;
+    margin: 20px 0;
+    padding: 20px;
+  }
+  
+  .iconWrap {
+    width: 75px;
+    height: 75px;
+    border-radius: 18px;
+  }
+  
+  .cardIcon {
+    font-size: 34px !important;
+  }
+  
+  .cardCenter h2 {
+    font-size: 20px;
+  }
+  
+  .cardCenter p {
+    font-size: 14px;
+  }
+  
+  .modalIcon {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+  }
+  
+  .modalIcon .cardIcon {
+    font-size: 36px !important;
+  }
+  
+  .modalTitle {
+    font-size: 24px;
+  }
+  
+  .modalDescription {
+    font-size: 15px;
+  }
+  
+  .modalInner {
+    padding: 20px;
+  }
 }

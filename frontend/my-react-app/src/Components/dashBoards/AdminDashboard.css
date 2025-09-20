@@ -1,0 +1,188 @@
+/* Admin Dashboard Custom Styles */
+.admin-dashboard {
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.admin-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+}
+
+.admin-loading-text {
+  color: #0891b2;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.admin-header {
+  background: linear-gradient(135deg, #00c2c9 0%, #0d9488 100%);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.admin-header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.admin-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.admin-card-header {
+  background: linear-gradient(135deg, #00c2c9 0%, #0d9488 100%);
+  padding: 1rem 1.5rem;
+}
+
+.admin-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+}
+
+.admin-table-container {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.admin-table-header {
+  background-color: #ccfbf1;
+  color: #0f766e;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+}
+
+.admin-table-header th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+}
+
+.admin-table-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-table-row:hover {
+  background-color: #f9fafb;
+}
+
+.admin-table-row:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.admin-table-row:nth-child(odd) {
+  background-color: white;
+}
+
+.admin-table-cell {
+  padding: 1rem 1.5rem;
+  color: #374151;
+}
+
+.admin-table-cell-user {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.admin-table-cell-email {
+  color: #6b7280;
+}
+
+.admin-table-cell-type {
+  font-weight: 500;
+  color: #374151;
+  text-transform: capitalize;
+}
+
+.admin-table-cell-ip {
+  color: #6b7280;
+}
+
+.admin-table-cell-time {
+  color: #6b7280;
+}
+
+.admin-icon {
+  margin-right: 0.75rem;
+}
+
+.admin-icon-user {
+  color: #0891b2;
+}
+
+.admin-icon-email {
+  color: #6b7280;
+}
+
+.admin-icon-type {
+  color: #6b7280;
+}
+
+.admin-icon-ip {
+  color: #6b7280;
+}
+
+.admin-icon-time {
+  color: #6b7280;
+}
+
+.admin-flex {
+  display: flex;
+  align-items: center;
+}
+
+.admin-no-data {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-header-content {
+    padding: 1rem;
+  }
+  
+  .admin-title {
+    font-size: 1.25rem;
+  }
+  
+  .admin-container {
+    padding: 1rem;
+  }
+  
+  .admin-table-header th,
+  .admin-table-cell {
+    padding: 0.75rem 1rem;
+  }
+}
