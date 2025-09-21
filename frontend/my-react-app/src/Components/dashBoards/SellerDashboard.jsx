@@ -65,13 +65,16 @@ const SellerDashboard = () => {
     try {
       const sellerEmail = localStorage.getItem("sellerEmail");
       const response = await axios.put(
-        `http://localhost:5001/user/seller-by-email/${sellerEmail}`,
+        `http://localhost:5000/api/user/seller-by-email/${sellerEmail}`,
         editData
       );
 
-      setSeller(response.data.seller);
+      setSeller(response.data);
       setIsEditing(false);
       alert("Profile updated successfully!");
+      
+      // Dispatch custom event to update navigation
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
     } catch (error) {
       console.error("Error updating profile:", error);
       alert("Error updating profile. Please try again.");

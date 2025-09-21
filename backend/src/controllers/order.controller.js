@@ -37,6 +37,17 @@ export const getOrderById = async (req, res) => {
     }
 };
 
+//Get orders by user ID
+export const getOrdersByUserId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const orders = await Order.find({ userId }).sort({ createdAt: -1 });
+        res.status(200).json(orders);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 //Update order status
 export const updateOrderStatus = async (req, res) => {
     try {

@@ -304,7 +304,14 @@
 
 @media (min-width: 768px) {
   .buyer-actions-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .buyer-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
   }
 }
 
@@ -387,6 +394,22 @@
 .buyer-action-tertiary .buyer-action-icon {
   background-color: rgba(14, 116, 144, 0.1);
   color: #0e7490;
+}
+
+.buyer-action-quaternary {
+  border-color: #059669;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.05), rgba(5, 150, 105, 0.02));
+}
+
+.buyer-action-quaternary:hover {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(5, 150, 105, 0.05));
+  border-color: #059669;
+  box-shadow: 0 8px 25px rgba(5, 150, 105, 0.2);
+}
+
+.buyer-action-quaternary .buyer-action-icon {
+  background-color: rgba(5, 150, 105, 0.1);
+  color: #059669;
 }
 
 .buyer-action-btn:hover .buyer-action-icon {

@@ -3,6 +3,7 @@ import {
             createOrder,
             getOrders,
             getOrderById,
+            getOrdersByUserId,
             updateOrderStatus,
             deleteOrder
  } from '../controllers/order.controller.js';
@@ -12,6 +13,7 @@ import {
  //Routes
  router.post('/', createOrder);
 router.get('/', getOrders);
+router.get('/user/:userId', getOrdersByUserId);
 router.get('/:id', getOrderById);
 router.put('/:id/status', updateOrderStatus);
 router.delete('/:id', deleteOrder);

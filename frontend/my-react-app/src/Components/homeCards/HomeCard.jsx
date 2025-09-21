@@ -18,7 +18,7 @@ const HomeCard = ({
   ],
   modalActions = [
     { label: "Bid Now", path: "/items", type: "primary" },
-    { label: "Order Now", action: () => {}, type: "secondary" }
+    { label: "Order Now", path: "/order", type: "secondary" }
   ]
 }) => {
   const [isOpen, setIsOpen] = useState(false);

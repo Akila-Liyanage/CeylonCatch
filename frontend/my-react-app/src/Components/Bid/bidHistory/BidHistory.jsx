@@ -1,85 +1,167 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, DollarSign, Package, TrendingUp, Calendar, Eye } from 'lucide-react';
+import { Clock, DollarSign, Package, TrendingUp, Calendar, Eye, RefreshCw, Search, Filter, Plus } from 'lucide-react';
+import axios from 'axios';
 
 const BidHistory = () => {
+    const { id } = useParams(); // Get user ID from URL parameter
     const [bids, setBids] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [selectedBid, setSelectedBid] = useState(null);
-    const userId = "user123"; // Replace with actual userId
+    const [userInfo, setUserInfo] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('All Types');
 
+    console.log('BidHistory component rendered with user ID:', id);
+
+    // Fetch bid history for specific user
     useEffect(() => {
-        const fetchBidHistory = async () => {
+        const fetchBidHistoryForUser = async () => {
+            if (!id) {
+                setError("No user ID provided");
+                setLoading(false);
+                return;
+            }
+
             try {
                 setLoading(true);
-                // Replace this section with your actual API call:
-                // const res = await axios.get(`http://localhost:5000/api/bids/history/${userId}`)
-                // setBids(res.data);
-                
-                // Simulating API call with mock data
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                const mockBids = [
-                    {
-                        _id: '1',
-                        itemId: {
-                            name: 'Vintage Watch Collection',
-                            image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=300&h=200&fit=crop',
-                        },
-                        bidAmount: 1250,
-                        createdAt: '2024-01-15T10:30:00Z',
-                        status: 'active'
-                    },
-                    {
-                        _id: '2',
-                        itemId: {
-                            name: 'Rare Art Piece',
-                            image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop',
-                        },
-                        bidAmount: 850,
-                        createdAt: '2024-01-14T15:45:00Z',
-                        status: 'outbid'
-                    },
-                    {
-                        _id: '3',
-                        itemId: {
-                            name: 'Antique Furniture Set',
-                            image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300&h=200&fit=crop',
-                        },
-                        bidAmount: 2100,
-                        createdAt: '2024-01-13T09:20:00Z',
-                        status: 'won'
+                setError(null);
+
+                console.log('BidHistory - Fetching bid history for user ID:', id);
+
+                // Try to get user details first to get the name and proper _id
+                let userName = 'User';
+                let actualUserId = id; // Default to the provided ID
+
+                // Check if the ID is an email or MongoDB _id
+                if (id.includes('@')) {
+                    // It's an email, try to get user details and _id
+                    try {
+                        const buyerEndpoint = `http://localhost:5000/api/user/buyer-by-email/${id}`;
+                        const sellerEndpoint = `http://localhost:5000/api/user/seller-by-email/${id}`;
+                        
+                        let userResponse;
+                        try {
+                            userResponse = await axios.get(buyerEndpoint);
+                            console.log('BidHistory - Found buyer:', userResponse.data);
+                        } catch (buyerError) {
+                            userResponse = await axios.get(sellerEndpoint);
+                            console.log('BidHistory - Found seller:', userResponse.data);
+                        }
+                        
+                        if (userResponse.data.name) {
+                            userName = userResponse.data.name;
+                        }
+                        if (userResponse.data._id) {
+                            // Use the MongoDB _id for fetching bids
+                            actualUserId = userResponse.data._id;
+                            console.log('BidHistory - Using MongoDB _id for bids:', actualUserId);
+                        }
+                    } catch (userError) {
+                        console.warn('BidHistory - Could not fetch user details:', userError.message);
                     }
-                ];
+                } else if (id.match(/^[0-9a-fA-F]{24}$/)) {
+                    // It's a MongoDB _id, try to get user details using the new endpoint
+                    try {
+                        const userEndpoint = `http://localhost:5000/api/user/user-by-id/${id}`;
+                        const userResponse = await axios.get(userEndpoint);
+                        
+                        if (userResponse.data.name) {
+                            userName = userResponse.data.name;
+                        }
+                        console.log('BidHistory - Using provided MongoDB _id:', actualUserId);
+                    } catch (userError) {
+                        console.warn('BidHistory - Could not fetch user details by _id:', userError.message);
+                    }
+                } else {
+                    console.log('BidHistory - Unknown ID format, using as-is:', id);
+                }
+
+                setUserInfo({ userId: actualUserId, userName, originalId: id });
+
+                // Fetch bid history using the user ID (could be email or MongoDB _id)
+                const bidResponse = await axios.get(`http://localhost:5000/api/bids/history/${id}`);
+                console.log('BidHistory - Bid response:', bidResponse.data);
                 
-                setBids(mockBids);
+                setBids(Array.isArray(bidResponse.data) ? bidResponse.data : []);
+
             } catch (error) {
-                console.error("Error fetching bid history:", error);
+                console.error('BidHistory - Error:', error);
+                console.error('BidHistory - Error response:', error.response?.data);
+                
+                if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+                    setError("Server connection failed. Please make sure the backend server is running.");
+                } else if (error.response?.status === 404) {
+                    setError("No bid history found for this user.");
+                } else {
+                    setError(error.response?.data?.message || "Failed to fetch bid history");
+                }
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchBidHistory();
-    }, [userId]);
+        fetchBidHistoryForUser();
+    }, [id]);
+
+    const handleRefresh = () => {
+        setError(null);
+        setLoading(true);
+        // Re-trigger the fetch for the current user ID
+        const fetchBidHistoryForUser = async () => {
+            try {
+                console.log('BidHistory - Refreshing bid history for user ID:', id);
+                const bidResponse = await axios.get(`http://localhost:5000/api/bids/history/${id}`);
+                console.log('BidHistory - Refresh bid response:', bidResponse.data);
+                setBids(Array.isArray(bidResponse.data) ? bidResponse.data : []);
+            } catch (error) {
+                console.error('BidHistory - Refresh error:', error);
+                setError(error.response?.data?.message || "Failed to fetch bid history");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBidHistoryForUser();
+    };
+
+    const getBidStatus = (bid, allBids) => {
+        const itemBids = allBids.filter(b => b.itemId === bid.itemId);
+        const highestBid = itemBids.reduce((max, current) => 
+            current.bidAmount > max.bidAmount ? current : max
+        );
+        
+        return bid._id === highestBid._id ? 'leading' : 'outbid';
+    };
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'won': return '#4CAF50';
-            case 'active': return '#2196F3';
-            case 'outbid': return '#FF9800';
-            default: return '#757575';
+            case 'leading': return '#10b981'; // Green
+            case 'outbid': return '#f59e0b'; // Orange
+            default: return '#6b7280'; // Gray
         }
     };
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'won': return <TrendingUp size={16} />;
-            case 'active': return <Clock size={16} />;
+            case 'leading': return <TrendingUp size={16} />;
             case 'outbid': return <Eye size={16} />;
             default: return <Package size={16} />;
         }
     };
+
+    // Filter bids based on search term
+    const filteredBids = bids.filter(bid => 
+        bid.ItemId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        bid.ItemId?.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Calculate statistics
+    const totalBids = bids.length;
+    const leadingBids = bids.filter(bid => getBidStatus(bid, bids) === 'leading').length;
+    const outbidBids = bids.filter(bid => getBidStatus(bid, bids) === 'outbid').length;
 
     if (loading) {
         return (
@@ -100,6 +182,57 @@ const BidHistory = () => {
         );
     }
 
+    if (error) {
+        return (
+            <div style={styles.errorContainer}>
+                <motion.div
+                    style={styles.errorCard}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
+                    <h3 style={styles.errorTitle}>
+                        {error === "Please login to view your bid history" ? "Login Required" : "Error"}
+                    </h3>
+                    <p style={styles.errorText}>{error}</p>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        {error === "Please login to view your bid history" ? (
+                            <>
+                                <motion.button
+                                    style={{...styles.retryButton, backgroundColor: '#3b82f6'}}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => window.location.href = '/buyerlogin'}
+                                >
+                                    Login as Buyer
+                                </motion.button>
+                                <motion.button
+                                    style={{...styles.retryButton, backgroundColor: '#10b981'}}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => window.location.href = '/sellerlogin'}
+                                >
+                                    Login as Seller
+                                </motion.button>
+                            </>
+                        ) : (
+                            <motion.button
+                                style={{...styles.retryButton, backgroundColor: '#667eea'}}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleRefresh}
+                            >
+                                <RefreshCw size={16} style={{ marginRight: '8px' }} />
+                                Try Again
+                            </motion.button>
+                        )}
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
+
     return (
         <motion.div
             style={styles.container}
@@ -107,6 +240,7 @@ const BidHistory = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
         >
+            {/* Header */}
             <motion.div
                 style={styles.header}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -116,22 +250,74 @@ const BidHistory = () => {
                 <div style={styles.headerContent}>
                     <Package size={32} style={styles.headerIcon} />
                     <div>
-                        <h1 style={styles.title}>My Bid History</h1>
-                        <p style={styles.subtitle}>Track all your auction activities</p>
+                        <h1 style={styles.title}>Bid History Dashboard</h1>
+                        <p style={styles.subtitle}>
+                            {userInfo ? `Welcome, ${userInfo.userName}` : 'Track all your auction activities'}
+                        </p>
                     </div>
                 </div>
+                <div style={styles.headerStats}>
+                    <motion.div
+                        style={styles.statsCard}
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                    >
+                        <span style={styles.statsNumber}>{totalBids}</span>
+                        <span style={styles.statsLabel}>TOTAL BIDS</span>
+                    </motion.div>
                 <motion.div
                     style={styles.statsCard}
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 300 }}
                 >
-                    <span style={styles.statsNumber}>{bids.length}</span>
-                    <span style={styles.statsLabel}>Total Bids</span>
+                        <span style={styles.statsNumber}>{leadingBids}</span>
+                        <span style={styles.statsLabel}>LEADING</span>
+                    </motion.div>
+                </div>
                 </motion.div>
+
+            {/* Search and Filter Bar */}
+            <motion.div
+                style={styles.searchBar}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+            >
+                <div style={styles.searchContainer}>
+                    <Search size={20} style={styles.searchIcon} />
+                    <input
+                        type="text"
+                        placeholder="Search by name, SKU, or description..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={styles.searchInput}
+                    />
+                </div>
+                <div style={styles.filterContainer}>
+                    <Filter size={16} style={styles.filterIcon} />
+                    <select
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        style={styles.filterSelect}
+                    >
+                        <option value="All Types">All Types</option>
+                        <option value="Leading">Leading</option>
+                        <option value="Outbid">Outbid</option>
+                    </select>
+                </div>
+                <motion.button
+                    style={styles.refreshButton}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleRefresh}
+                >
+                    <RefreshCw size={20} />
+                </motion.button>
             </motion.div>
 
+            {/* Bids Table */}
             <AnimatePresence>
-                {bids.length === 0 ? (
+                {filteredBids.length === 0 ? (
                     <motion.div
                         style={styles.emptyState}
                         initial={{ opacity: 0, scale: 0.8 }}
@@ -140,103 +326,119 @@ const BidHistory = () => {
                         transition={{ duration: 0.5 }}
                     >
                         <Package size={64} style={styles.emptyIcon} />
-                        <h3 style={styles.emptyTitle}>No bids placed yet</h3>
+                        <h3 style={styles.emptyTitle}>No bids found</h3>
                         <p style={styles.emptyText}>Start bidding on items you love!</p>
+                        <motion.button
+                            style={styles.browseButton}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => window.location.href = '/items'}
+                        >
+                            <Plus size={16} style={{ marginRight: '8px' }} />
+                            Browse Items
+                        </motion.button>
                     </motion.div>
                 ) : (
                     <motion.div
-                        style={styles.bidsGrid}
+                        style={styles.tableContainer}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
                     >
-                        {bids.map((bid, index) => (
+                        <div style={styles.table}>
+                            {/* Table Header */}
+                            <div style={styles.tableHeader}>
+                                <div style={styles.headerCell}>NAME</div>
+                                <div style={styles.headerCell}>SKU</div>
+                                <div style={styles.headerCell}>TYPE</div>
+                                <div style={styles.headerCell}>PRICE</div>
+                                <div style={styles.headerCell}>STATUS</div>
+                                <div style={styles.headerCell}>QUALITY</div>
+                                <div style={styles.headerCell}>ACTIONS</div>
+                            </div>
+
+                            {/* Table Rows */}
+                            {filteredBids.map((bid, index) => {
+                                const bidStatus = getBidStatus(bid, bids);
+                                return (
                             <motion.div
                                 key={bid._id}
-                                style={styles.bidCard}
-                                initial={{ opacity: 0, y: 30 }}
+                                        style={styles.tableRow}
+                                        initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
+                                        transition={{ duration: 0.5, delay: index * 0.05 }}
                                 whileHover={{ 
-                                    scale: 1.02,
-                                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
-                                }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => setSelectedBid(selectedBid === bid._id ? null : bid._id)}
-                            >
-                                <div style={styles.bidImageContainer}>
-                                    <img
-                                        src={bid.itemId.image}
-                                        alt={bid.itemId.name}
-                                        style={styles.bidImage}
-                                    />
-                                    <motion.div
-                                        style={{
-                                            ...styles.statusBadge,
-                                            backgroundColor: getStatusColor(bid.status)
+                                            backgroundColor: 'rgba(255, 255, 255, 0.05)'
                                         }}
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{ delay: (index * 0.1) + 0.5, type: "spring" }}
                                     >
-                                        {getStatusIcon(bid.status)}
-                                        <span style={styles.statusText}>
-                                            {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
-                                        </span>
-                                    </motion.div>
-                                </div>
-
-                                <div style={styles.bidContent}>
-                                    <h3 style={styles.bidTitle}>{bid.itemId.name}</h3>
-                                    
-                                    <div style={styles.bidDetails}>
-                                        <motion.div
-                                            style={styles.bidAmount}
-                                            whileHover={{ scale: 1.05 }}
-                                        >
-                                            <DollarSign size={20} style={styles.bidIcon} />
-                                            <span style={styles.bidAmountText}>
-                                                ${bid.bidAmount.toLocaleString()}
-                                            </span>
-                                        </motion.div>
-
-                                        <div style={styles.bidDate}>
-                                            <Calendar size={16} style={styles.dateIcon} />
-                                            <span style={styles.bidDateText}>
-                                                {new Date(bid.createdAt).toLocaleDateString('en-US', {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    year: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
+                                        <div style={styles.tableCell}>
+                                            <div style={styles.itemInfo}>
+                                                <div style={styles.itemIcon}>🐟</div>
+                                                <span style={styles.itemName}>
+                                                    {bid.ItemId?.name || 'Unknown Item'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div style={styles.tableCell}>
+                                            <span style={styles.skuText}>
+                                                SKU-{bid._id.slice(-4).toUpperCase()}
                                             </span>
                                         </div>
-                                    </div>
-
-                                    <AnimatePresence>
-                                        {selectedBid === bid._id && (
-                                            <motion.div
-                                                style={styles.expandedContent}
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <div style={styles.expandedDetails}>
-                                                    <p style={styles.expandedText}>
-                                                        Status: <strong>{bid.status.toUpperCase()}</strong>
-                                                    </p>
-                                                    <p style={styles.expandedText}>
-                                                        Bid placed on {new Date(bid.createdAt).toLocaleString()}
-                                                    </p>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                        <div style={styles.tableCell}>
+                                            <span style={styles.typeBadge}>FRESH</span>
+                                        </div>
+                                        <div style={styles.tableCell}>
+                                            <span style={styles.priceText}>
+                                                Rs.{bid.bidAmount.toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div style={styles.tableCell}>
+                                            <span 
+                                        style={{
+                                            ...styles.statusBadge,
+                                                    backgroundColor: getStatusColor(bidStatus)
+                                        }}
+                                    >
+                                                <div style={styles.statusDot}></div>
+                                                {bidStatus.toUpperCase()}
+                                        </span>
                                 </div>
-                            </motion.div>
-                        ))}
+                                        <div style={styles.tableCell}>
+                                            <span style={styles.qualityBadge}>
+                                                {bidStatus === 'leading' ? 'GOOD (9D)' : 'MEDIUM (6D)'}
+                                            </span>
+                                        </div>
+                                        <div style={styles.tableCell}>
+                                            <div style={styles.actionButtons}>
+                                                <motion.button
+                                                    style={{...styles.actionButton, backgroundColor: '#8b5cf6'}}
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                    onClick={() => setSelectedBid(selectedBid === bid._id ? null : bid._id)}
+                                                >
+                                                    <Eye size={16} />
+                                                </motion.button>
+                                                <motion.button
+                                                    style={{...styles.actionButton, backgroundColor: '#10b981'}}
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                    onClick={() => window.location.href = `/items/${bid.itemId}`}
+                                                >
+                                                    <TrendingUp size={16} />
+                                                </motion.button>
+                                                <motion.button
+                                                    style={{...styles.actionButton, backgroundColor: '#ef4444'}}
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                >
+                                                    <Package size={16} />
+                                                </motion.button>
+                                        </div>
+                                    </div>
+                                    </motion.div>
+                                );
+                            })}
+                                                </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -246,12 +448,10 @@ const BidHistory = () => {
 
 const styles = {
     container: {
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '40px 20px',
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        padding: '20px',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
     loadingContainer: {
         display: 'flex',
@@ -264,25 +464,25 @@ const styles = {
     loader: {
         width: '50px',
         height: '50px',
-        border: '4px solid #f3f3f3',
-        borderTop: '4px solid #667eea',
+        border: '4px solid #374151',
+        borderTop: '4px solid #00c2c9',
         borderRadius: '50%',
     },
     loadingText: {
         fontSize: '18px',
-        color: '#666',
+        color: '#9ca3af',
         margin: 0,
     },
     header: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '40px',
+        marginBottom: '30px',
         padding: '30px',
-        background: 'rgba(255, 255, 255, 0.95)',
-        borderRadius: '20px',
-        backdropFilter: 'blur(20px)',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+        background: 'rgba(15, 23, 42, 0.8)',
+        borderRadius: '16px',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
     },
     headerContent: {
         display: 'flex',
@@ -290,41 +490,207 @@ const styles = {
         gap: '20px',
     },
     headerIcon: {
-        color: '#667eea',
+        color: '#00c2c9',
     },
     title: {
         fontSize: '32px',
         fontWeight: '700',
-        color: '#2c3e50',
+        color: '#ffffff',
         margin: 0,
-        background: 'linear-gradient(45deg, #667eea, #764ba2)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
     },
     subtitle: {
         fontSize: '16px',
-        color: '#7f8c8d',
+        color: '#9ca3af',
         margin: '5px 0 0 0',
+    },
+    headerStats: {
+        display: 'flex',
+        gap: '16px',
     },
     statsCard: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         padding: '20px',
-        background: 'linear-gradient(45deg, #667eea, #764ba2)',
-        borderRadius: '15px',
+        background: 'rgba(0, 194, 201, 0.1)',
+        borderRadius: '12px',
         color: 'white',
-        minWidth: '120px',
-        cursor: 'pointer',
+        minWidth: '100px',
+        border: '1px solid rgba(0, 194, 201, 0.2)',
     },
     statsNumber: {
-        fontSize: '28px',
+        fontSize: '24px',
         fontWeight: '800',
+        color: '#00c2c9',
     },
     statsLabel: {
-        fontSize: '14px',
+        fontSize: '12px',
         opacity: 0.9,
         marginTop: '5px',
+        fontWeight: '600',
+    },
+    searchBar: {
+        display: 'flex',
+        gap: '16px',
+        marginBottom: '30px',
+        alignItems: 'center',
+    },
+    searchContainer: {
+        position: 'relative',
+        flex: 1,
+    },
+    searchIcon: {
+        position: 'absolute',
+        left: '16px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        color: '#9ca3af',
+    },
+    searchInput: {
+        width: '100%',
+        padding: '12px 16px 12px 48px',
+        background: 'rgba(15, 23, 42, 0.8)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '12px',
+        color: '#ffffff',
+        fontSize: '14px',
+        outline: 'none',
+    },
+    filterContainer: {
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+    },
+    filterIcon: {
+        position: 'absolute',
+        left: '12px',
+        color: '#9ca3af',
+        zIndex: 1,
+    },
+    filterSelect: {
+        padding: '12px 16px 12px 40px',
+        background: 'rgba(15, 23, 42, 0.8)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '12px',
+        color: '#ffffff',
+        fontSize: '14px',
+        outline: 'none',
+        minWidth: '120px',
+    },
+    refreshButton: {
+        background: 'rgba(0, 194, 201, 0.1)',
+        color: '#00c2c9',
+        border: '1px solid rgba(0, 194, 201, 0.2)',
+        borderRadius: '12px',
+        width: '48px',
+        height: '48px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+    },
+    tableContainer: {
+        background: 'rgba(15, 23, 42, 0.8)',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+    },
+    table: {
+        width: '100%',
+    },
+    tableHeader: {
+        display: 'grid',
+        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr',
+        background: 'rgba(0, 194, 201, 0.1)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    },
+    headerCell: {
+        padding: '16px',
+        fontSize: '12px',
+        fontWeight: '600',
+        color: '#9ca3af',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+    },
+    tableRow: {
+        display: 'grid',
+        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+        transition: 'background-color 0.2s ease',
+    },
+    tableCell: {
+        padding: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '14px',
+        color: '#ffffff',
+    },
+    itemInfo: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+    },
+    itemIcon: {
+        fontSize: '20px',
+    },
+    itemName: {
+        fontWeight: '500',
+    },
+    skuText: {
+        color: '#9ca3af',
+        fontSize: '12px',
+        fontWeight: '500',
+    },
+    typeBadge: {
+        background: 'rgba(0, 194, 201, 0.2)',
+        color: '#00c2c9',
+        padding: '4px 12px',
+        borderRadius: '20px',
+        fontSize: '12px',
+        fontWeight: '600',
+    },
+    priceText: {
+        fontWeight: '600',
+        color: '#ffffff',
+    },
+    statusBadge: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '6px 12px',
+        borderRadius: '20px',
+        fontSize: '12px',
+        fontWeight: '600',
+        color: '#ffffff',
+    },
+    statusDot: {
+        width: '6px',
+        height: '6px',
+        borderRadius: '50%',
+        backgroundColor: 'currentColor',
+    },
+    qualityBadge: {
+        background: 'rgba(245, 158, 11, 0.2)',
+        color: '#f59e0b',
+        padding: '4px 12px',
+        borderRadius: '20px',
+        fontSize: '12px',
+        fontWeight: '600',
+    },
+    actionButtons: {
+        display: 'flex',
+        gap: '8px',
+    },
+    actionButton: {
+        width: '32px',
+        height: '32px',
+        borderRadius: '50%',
+        border: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        color: '#ffffff',
     },
     emptyState: {
         display: 'flex',
@@ -332,126 +698,80 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '80px 40px',
-        background: 'rgba(255, 255, 255, 0.95)',
-        borderRadius: '20px',
-        backdropFilter: 'blur(20px)',
+        background: 'rgba(15, 23, 42, 0.8)',
+        borderRadius: '16px',
         textAlign: 'center',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
     },
     emptyIcon: {
-        color: '#bdc3c7',
+        color: '#6b7280',
         marginBottom: '20px',
     },
     emptyTitle: {
         fontSize: '24px',
-        color: '#2c3e50',
+        color: '#ffffff',
         margin: '0 0 10px 0',
+        fontWeight: '600',
     },
     emptyText: {
         fontSize: '16px',
-        color: '#7f8c8d',
-        margin: 0,
+        color: '#9ca3af',
+        margin: '0 0 30px 0',
     },
-    bidsGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-        gap: '25px',
-    },
-    bidCard: {
-        background: 'rgba(255, 255, 255, 0.95)',
-        borderRadius: '20px',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-    },
-    bidImageContainer: {
-        position: 'relative',
-        height: '200px',
-        overflow: 'hidden',
-    },
-    bidImage: {
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
-        transition: 'transform 0.3s ease',
-    },
-    statusBadge: {
-        position: 'absolute',
-        top: '15px',
-        right: '15px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '5px',
-        padding: '8px 12px',
-        borderRadius: '20px',
+    browseButton: {
+        background: 'linear-gradient(135deg, #00c2c9, #156eae)',
         color: 'white',
-        fontSize: '12px',
+        border: 'none',
+        borderRadius: '12px',
+        padding: '12px 24px',
+        fontSize: '14px',
         fontWeight: '600',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-    },
-    statusText: {
-        fontSize: '12px',
-    },
-    bidContent: {
-        padding: '25px',
-    },
-    bidTitle: {
-        fontSize: '20px',
-        fontWeight: '600',
-        color: '#2c3e50',
-        margin: '0 0 20px 0',
-        lineHeight: '1.3',
-    },
-    bidDetails: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '15px',
-    },
-    bidAmount: {
+        cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
-        padding: '10px 15px',
-        background: 'linear-gradient(45deg, #667eea, #764ba2)',
-        borderRadius: '25px',
-        color: 'white',
-        fontWeight: '600',
-        cursor: 'pointer',
     },
-    bidIcon: {
-        color: 'white',
-    },
-    bidAmountText: {
-        fontSize: '18px',
-        fontWeight: '700',
-    },
-    bidDate: {
+    errorContainer: {
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        padding: '20px',
+    },
+    errorCard: {
+        background: 'rgba(15, 23, 42, 0.9)',
+        borderRadius: '16px',
+        padding: '40px',
+        textAlign: 'center',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        maxWidth: '400px',
+    },
+    errorTitle: {
+        fontSize: '24px',
+        color: '#ef4444',
+        margin: '0 0 15px 0',
+        fontWeight: '600',
+    },
+    errorText: {
+        fontSize: '16px',
+        color: '#9ca3af',
+        margin: '0 0 25px 0',
+        lineHeight: '1.5',
+    },
+    retryButton: {
+        background: 'linear-gradient(135deg, #00c2c9, #156eae)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '12px',
+        padding: '12px 24px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         gap: '8px',
-        color: '#7f8c8d',
-    },
-    dateIcon: {
-        opacity: 0.7,
-    },
-    bidDateText: {
-        fontSize: '14px',
-    },
-    expandedContent: {
-        overflow: 'hidden',
-        borderTop: '1px solid #ecf0f1',
-        marginTop: '15px',
-    },
-    expandedDetails: {
-        padding: '15px 0',
-    },
-    expandedText: {
-        fontSize: '14px',
-        color: '#7f8c8d',
-        margin: '5px 0',
     },
 };
 

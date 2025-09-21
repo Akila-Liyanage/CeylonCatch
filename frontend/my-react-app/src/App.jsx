@@ -11,6 +11,10 @@ import BuyerRegister from './Components/buyerRegister/BuyerRegister'
 import SellerRegister from './Components/sellerRegister/SellerRegister'
 import BuyerDashboard from './Components/dashBoards/BuyerDashboard'
 import SellerDashboard from './Components/dashBoards/SellerDashboard'
+import AdminDashboard from './Components/dashBoards/AdminDashboard'
+import CustomerOrderForm from './Components/Order/Order/CustomerOrderForm'
+import CustomerOrderHistory from './Components/Order/Order/CustomerOrderHistory'
+import AdminOrderManagement from './Components/Order/Order/AdminOrderManagement'
 
 const App = () => {
   return (
@@ -26,6 +30,10 @@ const App = () => {
         <Route path="/bdashboard" element={<BuyerDashboard/>}/>
         <Route path="/sdashboard" element={<SellerDashboard/>}/>
         <Route path="/bidHistory/:id" element={<BidHistory/>}/>
+        <Route path="/admindashboard" element={<AdminDashboard/>}/>
+        <Route path="/order" element={<CustomerOrderForm/>}/>
+        <Route path="/order-history" element={<CustomerOrderHistory/>}/>
+        <Route path="/admin-orders" element={<AdminOrderManagement/>}/>
       </Routes>
     </Router>
   )

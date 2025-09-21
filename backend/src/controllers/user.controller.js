@@ -55,3 +55,31 @@ export const updateBuyer = async (req, res) => {
     res.status(500).json({ err: "Server error" });
   }
 };
+
+// Get user by MongoDB _id
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('getUserById - Looking for user with _id:', id);
+    
+    // Try to find in buyer collection first
+    let user = await Buyer.findById(id);
+    if (user) {
+      console.log('getUserById - Found buyer:', user.name);
+      return res.json(user);
+    }
+    
+    // Try to find in seller collection
+    user = await Seller.findById(id);
+    if (user) {
+      console.log('getUserById - Found seller:', user.name);
+      return res.json(user);
+    }
+    
+    console.log('getUserById - User not found');
+    return res.status(404).json({ message: "User not found" });
+  } catch (err) {
+    console.error('getUserById - Error:', err);
+    res.status(500).json({ err: "Server error" });
+  }
+};

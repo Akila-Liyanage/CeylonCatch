@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useParams } from 'react-router'
 import axios from 'axios'
 import io from 'socket.io-client'
+import { Clock, DollarSign, TrendingUp, Eye, Package, Users, Calendar, Crown } from 'lucide-react'
 import './itemDetails.css'
 
 const socket = io('http://localhost:5000')
@@ -16,6 +17,8 @@ const ItemDetails = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isSubmittingBid, setIsSubmittingBid] = useState(false)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [userInfo, setUserInfo] = useState(null)
   const minIncrement = 1
 
   // Fetch all auction data
@@ -24,28 +27,87 @@ const ItemDetails = () => {
       setLoading(true)
       setError(null)
       
+      console.log('ItemDetails - Fetching data for item:', id)
+      
       const [itemRes, highestRes, historyRes] = await Promise.all([
         axios.get(`http://localhost:5000/api/items/${id}`),
         axios.get(`http://localhost:5000/api/bids/${id}/highest`).catch(() => ({ data: null })),
         axios.get(`http://localhost:5000/api/bids/${id}/history`).catch(() => ({ data: [] }))
       ])
       
+      console.log('ItemDetails - Item data:', itemRes.data)
+      console.log('ItemDetails - Highest bid:', highestRes?.data)
+      console.log('ItemDetails - Bid history:', historyRes.data)
+      
       setItem(itemRes.data)
       setHighestBid(highestRes?.data || null)
       setBidHistory(historyRes.data || [])
     } catch (err) {
-      console.error('Error fetching auction data:', err)
+      console.error('ItemDetails - Error fetching auction data:', err)
       setError('Failed to load auction details. Please try again.')
     } finally {
       setLoading(false)
     }
   }, [id])
 
+  // Check user authentication
+  const checkUserAuth = useCallback(async () => {
+    try {
+      const buyerToken = localStorage.getItem('buyerToken')
+      const sellerToken = localStorage.getItem('sellerToken')
+      const buyerEmail = localStorage.getItem('buyerEmail')
+      const sellerEmail = localStorage.getItem('sellerEmail')
+
+      console.log('ItemDetails - Auth check:', { 
+        buyerToken: !!buyerToken, 
+        sellerToken: !!sellerToken, 
+        buyerEmail, 
+        sellerEmail 
+      })
+
+      if (!buyerToken && !sellerToken) {
+        setUserInfo(null)
+        return
+      }
+
+      const isBuyer = !!buyerToken
+      const userEmail = isBuyer ? buyerEmail : sellerEmail
+      let userId = userEmail
+      let userName = userEmail.split('@')[0]
+
+      try {
+        const endpoint = isBuyer 
+          ? `http://localhost:5000/api/user/buyer-by-email/${userEmail}`
+          : `http://localhost:5000/api/user/seller-by-email/${userEmail}`
+        
+        console.log('ItemDetails - Fetching user details from:', endpoint)
+        const userResponse = await axios.get(endpoint)
+        console.log('ItemDetails - User response:', userResponse.data)
+        
+        if (userResponse.data._id) {
+          userId = userResponse.data._id
+        }
+        if (userResponse.data.name) {
+          userName = userResponse.data.name
+        }
+      } catch (userError) {
+        console.warn('ItemDetails - Could not fetch user details, using email:', userError.message)
+      }
+
+      setUserInfo({ userId, userName, userEmail, userType: isBuyer ? 'buyer' : 'seller' })
+    } catch (error) {
+      console.error('ItemDetails - Error checking auth:', error)
+      setUserInfo(null)
+    }
+  }, [])
+
   useEffect(() => {
     fetchAll()
+    checkUserAuth()
 
     // Socket event listener for real-time bid updates
     const handleBidUpdate = (data) => {
+      console.log('ItemDetails - Received bid update:', data)
       if (data.itemId === id) {
         setItem(prev => ({ 
           ...prev, 
@@ -79,29 +141,35 @@ const ItemDetails = () => {
       socket.off('bidUpdate', handleBidUpdate)
       clearInterval(timer)
     }
-  }, [id, fetchAll])
+  }, [id, fetchAll, checkUserAuth])
 
   // Calculate minimum allowed bid
   const minAllowed = useMemo(() => {
     if (!item) return 0
-    return Number(item.currentPrice || item.startingPrice || 0) + minIncrement
-  }, [item])
+    const current = item.currentPrice || item.startingPrice
+    return current + minIncrement
+  }, [item, minIncrement])
 
-  // Calculate time left in seconds
+  // Calculate time left
   const timeLeftSeconds = useMemo(() => {
-    if (!item) return 0
+    if (!item?.endTime) return 0
     return Math.max(0, Math.floor((new Date(item.endTime).getTime() - now) / 1000))
-  }, [item, now])
+  }, [item?.endTime, now])
 
-  // Format time display
+  const isAuctionActive = timeLeftSeconds > 0 && item?.status === 'open'
+
+  // Format time left
   const formatTimeLeft = useMemo(() => {
     if (timeLeftSeconds <= 0) return 'Auction Ended'
     
-    const hours = Math.floor(timeLeftSeconds / 3600)
+    const days = Math.floor(timeLeftSeconds / 86400)
+    const hours = Math.floor((timeLeftSeconds % 86400) / 3600)
     const minutes = Math.floor((timeLeftSeconds % 3600) / 60)
     const seconds = timeLeftSeconds % 60
     
-    if (hours > 0) {
+    if (days > 0) {
+      return `${days}d ${hours}h ${minutes}m`
+    } else if (hours > 0) {
       return `${hours}h ${minutes}m ${seconds}s`
     } else if (minutes > 0) {
       return `${minutes}m ${seconds}s`
@@ -110,14 +178,18 @@ const ItemDetails = () => {
     }
   }, [timeLeftSeconds])
 
+  const isCriticalTime = timeLeftSeconds < 300 // Less than 5 minutes
+
   // Handle bid submission
   const handleBid = async () => {
     if (!item || isSubmittingBid) return
 
+    console.log('ItemDetails - Attempting to place bid')
+
     // Check authentication
-    const auth = JSON.parse(localStorage.getItem('authUser') || 'null')
-    if (!auth?.id || !auth?.name) {
-      alert('Please login to place a bid')
+    if (!userInfo) {
+      console.log('ItemDetails - User not authenticated, showing login prompt')
+      setShowLoginPrompt(true)
       return
     }
 
@@ -134,7 +206,7 @@ const ItemDetails = () => {
     }
 
     // Check auction status
-    if (new Date(item.endTime).getTime() <= Date.now() || item.status !== 'open') {
+    if (!isAuctionActive) {
       alert('This auction is no longer accepting bids')
       return
     }
@@ -142,23 +214,29 @@ const ItemDetails = () => {
     try {
       setIsSubmittingBid(true)
       
-      await axios.post('http://localhost:5000/api/bids', {
+      console.log('ItemDetails - Submitting bid:', {
         itemId: id,
-        userId: auth.id,
-        userName: auth.name,
+        userId: userInfo.userId,
+        userName: userInfo.userName,
         bidAmount: numericBid
       })
       
+      await axios.post('http://localhost:5000/api/bids', {
+        itemId: id,
+        userId: userInfo.userId,
+        userName: userInfo.userName,
+        bidAmount: numericBid
+      })
+      
+      console.log('ItemDetails - Bid submitted successfully')
       setBidAmount('')
       
-      // Show success message
-      const bidSuccessMsg = `Bid of Rs.${numericBid} placed successfully!`
-      alert(bidSuccessMsg)
+      // Refresh data
+      await fetchAll()
       
-    } catch (err) {
-      console.error('Bid submission error:', err)
-      const errorMsg = err?.response?.data?.message || 'Failed to place bid. Please try again.'
-      alert(errorMsg)
+    } catch (error) {
+      console.error('ItemDetails - Error submitting bid:', error)
+      alert('Error placing bid: ' + (error.response?.data?.message || error.message))
     } finally {
       setIsSubmittingBid(false)
     }
@@ -183,11 +261,9 @@ const ItemDetails = () => {
   // Loading state
   if (loading) {
     return (
-      <div className='itemDetails'>
-        <div className='loading-state'>
-          <div className='loading-spinner'></div>
-          <p>Loading auction details...</p>
-        </div>
+      <div style={styles.loadingContainer}>
+        <div style={styles.loader}></div>
+        <p style={styles.loadingText}>Loading auction details...</p>
       </div>
     )
   }
@@ -195,97 +271,162 @@ const ItemDetails = () => {
   // Error state
   if (error) {
     return (
-      <div className='itemDetails'>
-        <div className='loading-state'>
-          <p style={{ color: '#ef4444' }}>{error}</p>
-          <button 
-            onClick={fetchAll}
-            style={{
-              padding: '12px 24px',
-              background: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer'
-            }}
-          >
-            Retry
-          </button>
+      <div style={styles.errorContainer}>
+        <div style={styles.errorCard}>
+          <h3 style={styles.errorTitle}>Error</h3>
+          <p style={styles.errorText}>{error}</p>
         </div>
       </div>
     )
   }
 
-  // Item not found
+  // No item found
   if (!item) {
     return (
-      <div className='itemDetails'>
-        <div className='loading-state'>
-          <p>Auction not found</p>
+      <div style={styles.errorContainer}>
+        <div style={styles.errorCard}>
+          <h3 style={styles.errorTitle}>Item Not Found</h3>
+          <p style={styles.errorText}>The requested item could not be found.</p>
         </div>
       </div>
     )
   }
 
-  const isAuctionActive = item.status === 'open' && timeLeftSeconds > 0
-  const isCriticalTime = timeLeftSeconds <= 30 && timeLeftSeconds > 0
-
   return (
-    <div className={`itemDetails ${isCriticalTime ? 'auction-ending' : ''}`}>
-      {/* Item Image */}
-      <div className='item-image'>
-        <img 
-          src={item.image} 
+    <div style={styles.container}>
+      {/* Login Prompt Modal */}
+      {showLoginPrompt && (
+        <div style={styles.modalOverlay} onClick={() => setShowLoginPrompt(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalIcon}>🔐</div>
+            <h3 style={styles.modalTitle}>Login Required</h3>
+            <p style={styles.modalText}>Please login to place a bid</p>
+            <div style={styles.modalButtons}>
+              <button 
+                style={{...styles.modalButton, background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)'}}
+                onClick={() => window.location.href = '/buyerlogin'}
+              >
+                Login as Buyer
+              </button>
+              <button 
+                style={{...styles.modalButton, background: 'linear-gradient(135deg, #10b981, #059669)'}}
+                onClick={() => window.location.href = '/sellerlogin'}
+              >
+                Login as Seller
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.headerContent}>
+          <Package size={32} style={styles.headerIcon} />
+          <div>
+            <h1 style={styles.title}>Auction Details</h1>
+            <p style={styles.subtitle}>Live auction information and bidding</p>
+          </div>
+        </div>
+        <div style={styles.headerStats}>
+          <div style={styles.statsCard}>
+            <span style={styles.statsNumber}>{bidHistory.length}</span>
+            <span style={styles.statsLabel}>TOTAL BIDS</span>
+          </div>
+          <div style={styles.statsCard}>
+            <span style={styles.statsNumber}>
+              {isAuctionActive ? 'LIVE' : 'ENDED'}
+            </span>
+            <span style={styles.statsLabel}>STATUS</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        {/* Item Image and Basic Info */}
+        <div style={styles.itemSection}>
+          <div style={styles.imageContainer}>
+            <img 
+              src={item.image || '/images/default-item.jpg'} 
           alt={item.name}
-          onError={(e) => {
-            e.target.src = '/placeholder-image.jpg' // Fallback image
-          }}
+              style={styles.itemImage}
         />
+            <div style={styles.imageOverlay}>
+              <span style={styles.itemType}>FRESH</span>
+            </div>
       </div>
 
-      {/* Item Details */}
-      <h2>{item.name}</h2>
-      <p>{item.description}</p>
-
-      {/* Price Information */}
-      <div className='price-info'>
-        <div className='price-card'>
-          <h3>Starting Price</h3>
-          <p>Rs.{Number(item.startingPrice).toLocaleString()}</p>
+          <div style={styles.itemInfo}>
+            <h2 style={styles.itemName}>{item.name}</h2>
+            <p style={styles.itemDescription}>{item.description}</p>
+            
+            {/* Price Cards */}
+            <div style={styles.priceCards}>
+              <div style={styles.priceCard}>
+                <div style={styles.priceLabel}>Starting Price</div>
+                <div style={styles.priceValue}>
+                  Rs.{Number(item.startingPrice).toLocaleString()}
+                </div>
         </div>
-        <div className='price-card'>
-          <h3>Current Price</h3>
-          <p className='current-price'>
+              <div style={styles.priceCard}>
+                <div style={styles.priceLabel}>Current Price</div>
+                <div style={{...styles.priceValue, color: '#00c2c9'}}>
             Rs.{Number(item.currentPrice || item.startingPrice).toLocaleString()}
-          </p>
+                </div>
         </div>
       </div>
 
-      {/* Status Badge */}
-      <span className={`status ${item.status === 'open' ? 'status-open' : 'status-closed'}`}>
-        {item.status === 'open' ? 'Open' : 'Closed'}
-      </span>
-
-      {/* Countdown Timer */}
-      <div className={`countdown ${isCriticalTime ? 'countdown-critical' : ''}`}>
-        <span>⏳ Time Left:</span>
-        <strong>{formatTimeLeft}</strong>
+            {/* Status and Timer */}
+            <div style={styles.statusSection}>
+              <div style={{
+                ...styles.statusBadge,
+                background: isAuctionActive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                borderColor: isAuctionActive ? '#10b981' : '#ef4444',
+                color: isAuctionActive ? '#10b981' : '#ef4444'
+              }}>
+                <div style={{
+                  ...styles.statusDot,
+                  backgroundColor: isAuctionActive ? '#10b981' : '#ef4444'
+                }}></div>
+                {isAuctionActive ? 'LIVE' : 'ENDED'}
+              </div>
+              
+              <div style={{
+                ...styles.timerBadge,
+                background: isCriticalTime ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                borderColor: isCriticalTime ? '#ef4444' : '#f59e0b',
+                color: isCriticalTime ? '#ef4444' : '#f59e0b'
+              }}>
+                <Clock size={16} />
+                {formatTimeLeft}
+              </div>
       </div>
 
       {/* Highest Bidder */}
       {highestBid && (
-        <div className='highest-bidder'>
-          <span className='crown-emoji'>👑</span>
-          <strong> Highest Bidder: </strong>
+              <div style={styles.highestBidder}>
+                <Crown size={20} style={styles.crownIcon} />
+                <div>
+                  <div style={styles.highestBidderLabel}>Highest Bidder</div>
+                  <div style={styles.highestBidderName}>
           {highestBid.userName} - Rs.{Number(highestBid.bidAmount).toLocaleString()}
+                  </div>
+                </div>
         </div>
       )}
+          </div>
+        </div>
 
       {/* Bid Section */}
+        <div style={styles.bidSection}>
+          <h3 style={styles.bidSectionTitle}>Place Your Bid</h3>
+          
       {isAuctionActive ? (
-        <div className='bid-box'>
-          <h3>Place Your Bid</h3>
-          <div className='bid-input-group'>
+            userInfo ? (
+              <div style={styles.bidForm}>
+                <div style={styles.bidInputContainer}>
+                  <DollarSign size={20} style={styles.inputIcon} />
             <input
               type='text'
               placeholder={`Minimum Rs.${minAllowed.toLocaleString()}`}
@@ -293,127 +434,73 @@ const ItemDetails = () => {
               onChange={handleBidInputChange}
               onKeyPress={handleKeyPress}
               disabled={isSubmittingBid}
+                    style={styles.bidInput}
               autoComplete="off"
             />
+                </div>
             <button
               onClick={handleBid}
               disabled={isSubmittingBid || !bidAmount || timeLeftSeconds <= 0}
+                  style={styles.bidButton}
             >
               {isSubmittingBid ? 'Placing Bid...' : 'Place Bid'}
             </button>
           </div>
-        </div>
-      ) : (
-        <div className='auction-closed'>
-          {timeLeftSeconds <= 0 ? 'Auction has ended' : 'Auction is closed'}
+            ) : (
+              <button 
+                style={styles.loginButton}
+                onClick={() => setShowLoginPrompt(true)}
+              >
+                Login to Place Bid
+              </button>
+            )
+          ) : (
+            <div style={styles.auctionEnded}>
+              <h4 style={styles.auctionEndedTitle}>🚫 Auction Ended</h4>
+              <p style={styles.auctionEndedText}>This auction is no longer accepting bids</p>
         </div>
       )}
+        </div>
 
       {/* Bid History */}
-      <div className='bid-history'>
-        <h3>Bid History</h3>
+        <div style={styles.historySection}>
+          <h3 style={styles.historyTitle}>
+            <TrendingUp size={20} style={{ marginRight: '8px' }} />
+            Bid History
+          </h3>
+          
         {bidHistory.length === 0 ? (
-          <div className='no-bids'>
-            <p>No bids placed yet. Be the first to bid!</p>
+            <div style={styles.noBids}>
+              <Users size={48} style={styles.noBidsIcon} />
+              <p style={styles.noBidsText}>No bids placed yet. Be the first to bid!</p>
           </div>
         ) : (
-          <ul>
+            <div style={styles.bidHistoryList}>
             {bidHistory.map((bid, index) => (
-              <li key={`${bid.itemId}-${bid.userName}-${bid.createdAt}-${index}`}>
-                <div className='bid-info'>
-                  <div className='bidder-name'>
+                <div key={`${bid.itemId}-${bid.userName}-${bid.createdAt}-${index}`} style={styles.bidItem}>
+                  <div style={styles.bidItemInfo}>
+                    <div style={styles.bidderInfo}>
+                      <div style={styles.bidderName}>
                     {bid.userName}
-                    {index === 0 && <span className='crown-emoji'> 👑</span>}
+                        {index === 0 && <Crown size={16} style={styles.crownIcon} />}
                   </div>
-                  <div className='bid-time'>
+                      <div style={styles.bidTime}>
+                        <Calendar size={14} />
                     {new Date(bid.createdAt).toLocaleString('en-US', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',
                       hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit'
+                          minute: '2-digit'
                     })}
                   </div>
                 </div>
-                <div className='bid-amount'>
+                    <div style={styles.bidAmount}>
                   Rs.{Number(bid.bidAmount).toLocaleString()}
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Quick Bid Buttons (Optional Enhancement) */}
-      {isAuctionActive && (
-        <div className='quick-bid-section' style={{ marginTop: '20px' }}>
-          <p style={{ marginBottom: '12px', color: '#64748b', fontSize: '14px' }}>
-            Quick bid amounts:
-          </p>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            {[minAllowed, minAllowed + 50, minAllowed + 100, minAllowed + 200].map((amount) => (
-              <button
-                key={amount}
-                onClick={() => setBidAmount(amount.toString())}
-                style={{
-                  padding: '8px 16px',
-                  background: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '8px',
-                  color: '#475569',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.background = '#e2e8f0'
-                  e.target.style.borderColor = '#94a3b8'
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.background = '#f1f5f9'
-                  e.target.style.borderColor = '#cbd5e1'
-                }}
-              >
-                Rs.{amount.toLocaleString()}
-              </button>
-            ))}
           </div>
         </div>
-      )}
-
-      {/* Auction Info Footer */}
-      <div style={{ 
-        marginTop: '32px', 
-        padding: '20px', 
-        background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
-        borderRadius: '12px',
-        border: '1px solid #e2e8f0'
-      }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
-          fontSize: '14px',
-          color: '#64748b'
-        }}>
-          <div>
-            <strong>Auction ID:</strong> {id}
-          </div>
-          <div>
-            <strong>Total Bids:</strong> {bidHistory.length}
-          </div>
-          {item.endTime && (
-            <div>
-              <strong>End Time:</strong> {new Date(item.endTime).toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
+              ))}
             </div>
           )}
         </div>
@@ -421,5 +508,461 @@ const ItemDetails = () => {
     </div>
   )
 }
+
+const styles = {
+  container: {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+    padding: '20px',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '400px',
+    gap: '20px',
+  },
+  loader: {
+    width: '50px',
+    height: '50px',
+    border: '4px solid #374151',
+    borderTop: '4px solid #00c2c9',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  loadingText: {
+    fontSize: '18px',
+    color: '#9ca3af',
+    margin: 0,
+  },
+  errorContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '400px',
+    padding: '20px',
+  },
+  errorCard: {
+    background: 'rgba(15, 23, 42, 0.9)',
+    borderRadius: '16px',
+    padding: '40px',
+    textAlign: 'center',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    maxWidth: '400px',
+  },
+  errorTitle: {
+    fontSize: '24px',
+    color: '#ef4444',
+    margin: '0 0 15px 0',
+    fontWeight: '600',
+  },
+  errorText: {
+    fontSize: '16px',
+    color: '#9ca3af',
+    margin: 0,
+    lineHeight: '1.5',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '30px',
+    padding: '30px',
+    background: 'rgba(15, 23, 42, 0.8)',
+    borderRadius: '16px',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  headerContent: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '20px',
+  },
+  headerIcon: {
+    color: '#00c2c9',
+  },
+  title: {
+    fontSize: '32px',
+    fontWeight: '700',
+    color: '#ffffff',
+    margin: 0,
+  },
+  subtitle: {
+    fontSize: '16px',
+    color: '#9ca3af',
+    margin: '5px 0 0 0',
+  },
+  headerStats: {
+    display: 'flex',
+    gap: '16px',
+  },
+  statsCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '20px',
+    background: 'rgba(0, 194, 201, 0.1)',
+    borderRadius: '12px',
+    color: 'white',
+    minWidth: '100px',
+    border: '1px solid rgba(0, 194, 201, 0.2)',
+  },
+  statsNumber: {
+    fontSize: '20px',
+    fontWeight: '800',
+    color: '#00c2c9',
+  },
+  statsLabel: {
+    fontSize: '12px',
+    opacity: 0.9,
+    marginTop: '5px',
+    fontWeight: '600',
+  },
+  mainContent: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '30px',
+  },
+  itemSection: {
+    background: 'rgba(15, 23, 42, 0.8)',
+    borderRadius: '16px',
+    padding: '30px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  imageContainer: {
+    position: 'relative',
+    marginBottom: '24px',
+    borderRadius: '12px',
+    overflow: 'hidden',
+  },
+  itemImage: {
+    width: '100%',
+    height: '300px',
+    objectFit: 'cover',
+    borderRadius: '12px',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
+  },
+  itemType: {
+    background: 'rgba(0, 194, 201, 0.2)',
+    color: '#00c2c9',
+    padding: '6px 12px',
+    borderRadius: '20px',
+    fontSize: '12px',
+    fontWeight: '600',
+    border: '1px solid rgba(0, 194, 201, 0.3)',
+  },
+  itemInfo: {
+    color: '#ffffff',
+  },
+  itemName: {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: '#ffffff',
+    margin: '0 0 12px 0',
+  },
+  itemDescription: {
+    fontSize: '16px',
+    color: '#9ca3af',
+    lineHeight: '1.6',
+    margin: '0 0 24px 0',
+  },
+  priceCards: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '16px',
+    marginBottom: '24px',
+  },
+  priceCard: {
+    background: 'rgba(255, 255, 255, 0.05)',
+    padding: '20px',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  priceLabel: {
+    fontSize: '14px',
+    color: '#9ca3af',
+    marginBottom: '8px',
+    fontWeight: '500',
+  },
+  priceValue: {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  statusSection: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '24px',
+  },
+  statusBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 16px',
+    borderRadius: '20px',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: '1px solid',
+  },
+  statusDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+  },
+  timerBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 16px',
+    borderRadius: '20px',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: '1px solid',
+  },
+  highestBidder: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '16px',
+    background: 'rgba(245, 158, 11, 0.1)',
+    borderRadius: '12px',
+    border: '1px solid rgba(245, 158, 11, 0.2)',
+  },
+  crownIcon: {
+    color: '#f59e0b',
+  },
+  highestBidderLabel: {
+    fontSize: '14px',
+    color: '#9ca3af',
+    marginBottom: '4px',
+  },
+  highestBidderName: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  bidSection: {
+    background: 'rgba(15, 23, 42, 0.8)',
+    borderRadius: '16px',
+    padding: '30px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    height: 'fit-content',
+  },
+  bidSectionTitle: {
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#ffffff',
+    margin: '0 0 24px 0',
+  },
+  bidForm: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  bidInputContainer: {
+    position: 'relative',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: '16px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#9ca3af',
+  },
+  bidInput: {
+    width: '100%',
+    padding: '16px 16px 16px 48px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    color: '#ffffff',
+    fontSize: '16px',
+    outline: 'none',
+  },
+  bidInput: {
+    width: '100%',
+    padding: '16px 16px 16px 48px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    color: '#ffffff',
+    fontSize: '16px',
+    outline: 'none',
+  },
+  bidButton: {
+    padding: '16px 24px',
+    background: 'linear-gradient(135deg, #00c2c9, #156eae)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+  loginButton: {
+    width: '100%',
+    padding: '16px 24px',
+    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+  auctionEnded: {
+    textAlign: 'center',
+    padding: '24px',
+    background: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: '12px',
+    border: '1px solid rgba(239, 68, 68, 0.2)',
+  },
+  auctionEndedTitle: {
+    fontSize: '18px',
+    color: '#ef4444',
+    margin: '0 0 8px 0',
+    fontWeight: '600',
+  },
+  auctionEndedText: {
+    fontSize: '14px',
+    color: '#9ca3af',
+    margin: 0,
+  },
+  historySection: {
+    gridColumn: '1 / -1',
+    background: 'rgba(15, 23, 42, 0.8)',
+    borderRadius: '16px',
+    padding: '30px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    marginTop: '20px',
+  },
+  historyTitle: {
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#ffffff',
+    margin: '0 0 24px 0',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  noBids: {
+    textAlign: 'center',
+    padding: '40px',
+    color: '#9ca3af',
+  },
+  noBidsIcon: {
+    marginBottom: '16px',
+    opacity: 0.5,
+  },
+  noBidsText: {
+    fontSize: '16px',
+    margin: 0,
+  },
+  bidHistoryList: {
+    maxHeight: '400px',
+    overflowY: 'auto',
+  },
+  bidItem: {
+    padding: '16px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: '12px',
+    marginBottom: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  bidItemInfo: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  bidderInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  bidderName: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#ffffff',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  bidTime: {
+    fontSize: '12px',
+    color: '#9ca3af',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  bidAmount: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#00c2c9',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.8)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    backdropFilter: 'blur(5px)',
+  },
+  modal: {
+    background: 'rgba(15, 23, 42, 0.95)',
+    borderRadius: '16px',
+    padding: '40px',
+    textAlign: 'center',
+    maxWidth: '400px',
+    width: '90%',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+  },
+  modalIcon: {
+    fontSize: '48px',
+    marginBottom: '16px',
+  },
+  modalTitle: {
+    fontSize: '24px',
+    color: '#ef4444',
+    margin: '0 0 15px 0',
+    fontWeight: '600',
+  },
+  modalText: {
+    fontSize: '16px',
+    color: '#9ca3af',
+    margin: '0 0 25px 0',
+    lineHeight: '1.5',
+  },
+  modalButtons: {
+    display: 'flex',
+    gap: '12px',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
+  modalButton: {
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    padding: '12px 24px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    minWidth: '140px',
+  },
+};
 
 export default ItemDetails

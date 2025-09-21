@@ -70,6 +70,9 @@ const BuyerDashboard = () => {
       setBuyer(response.data);
       setIsEditing(false);
       alert('Profile updated successfully!');
+      
+      // Dispatch custom event to update navigation
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
     } catch (error) {
       console.error('Error updating profile:', error);
       alert('Error updating profile. Please try again.');
@@ -84,14 +87,45 @@ const BuyerDashboard = () => {
     }));
   };
 
-  const handleNavigateToBidHistory = () => {
-    // For now, we'll use a placeholder user ID. In a real app, you'd get this from the buyer data
-    const userId = buyer?._id || 'user123';
-    navigate(`/bidHistory/${userId}`);
+  const handleNavigateToBidHistory = async () => {
+    try {
+      // Get the current user's email and fetch their _id
+      const buyerEmail = localStorage.getItem('buyerEmail');
+      if (!buyerEmail) {
+        alert('User email not found. Please login again.');
+        return;
+      }
+
+      // Fetch user details to get the MongoDB _id
+      const response = await axios.get(`http://localhost:5000/api/user/buyer-by-email/${buyerEmail}`);
+      const userId = response.data._id;
+      
+      if (userId) {
+        console.log('Navigating to bid history with userId:', userId);
+        navigate(`/bidHistory/${userId}`);
+      } else {
+        // Fallback to email if _id not found
+        console.log('_id not found, using email as fallback');
+        navigate(`/bidHistory/${buyerEmail}`);
+      }
+    } catch (error) {
+      console.error('Error fetching user _id:', error);
+      // Fallback to email
+      const buyerEmail = localStorage.getItem('buyerEmail');
+      navigate(`/bidHistory/${buyerEmail}`);
+    }
   };
 
   const handleNavigateToItems = () => {
     navigate('/items');
+  };
+
+  const handleNavigateToOrder = () => {
+    navigate('/order');
+  };
+
+  const handleNavigateToOrderHistory = () => {
+    navigate('/order-history');
   };
 
   if (loading) {
@@ -269,11 +303,37 @@ const BuyerDashboard = () => {
           <div className="buyer-card-body">
             <div className="buyer-actions-grid">
               <button 
-                onClick={handleNavigateToBidHistory}
+                onClick={handleNavigateToOrder}
                 className="buyer-action-btn buyer-action-primary"
               >
                 <div className="buyer-action-icon">
+                  <FaShoppingCart />
+                </div>
+                <div className="buyer-action-content">
+                  <h3>Order Now</h3>
+                  <p>Place a new order for fresh fish delivery</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={handleNavigateToOrderHistory}
+                className="buyer-action-btn buyer-action-secondary"
+              >
+                <div className="buyer-action-icon">
                   <FaHistory />
+                </div>
+                <div className="buyer-action-content">
+                  <h3>Order History</h3>
+                  <p>View your order history and track delivery status</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={handleNavigateToBidHistory}
+                className="buyer-action-btn buyer-action-tertiary"
+              >
+                <div className="buyer-action-icon">
+                  <FaGavel />
                 </div>
                 <div className="buyer-action-content">
                   <h3>Bid History</h3>
@@ -283,27 +343,14 @@ const BuyerDashboard = () => {
 
               <button 
                 onClick={handleNavigateToItems}
-                className="buyer-action-btn buyer-action-secondary"
+                className="buyer-action-btn buyer-action-quaternary"
               >
                 <div className="buyer-action-icon">
-                  <FaGavel />
+                  <FaFish />
                 </div>
                 <div className="buyer-action-content">
                   <h3>Browse Items</h3>
                   <p>Explore available fish lots and place new bids</p>
-                </div>
-              </button>
-
-              <button 
-                onClick={() => navigate('/items')}
-                className="buyer-action-btn buyer-action-tertiary"
-              >
-                <div className="buyer-action-icon">
-                  <FaShoppingCart />
-                </div>
-                <div className="buyer-action-content">
-                  <h3>My Orders</h3>
-                  <p>Track your purchased items and delivery status</p>
                 </div>
               </button>
             </div>
