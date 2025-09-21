@@ -348,7 +348,7 @@ const ItemDetails = () => {
         <div style={styles.itemSection}>
           <div style={styles.imageContainer}>
             <img 
-              src={item.image || '/images/default-item.jpg'} 
+              src={item.images && item.images.length > 0 ? `http://localhost:5000/uploads/${item.images[0]}` : '/images/default-item.jpg'} 
           alt={item.name}
               style={styles.itemImage}
         />
@@ -373,6 +373,12 @@ const ItemDetails = () => {
                 <div style={styles.priceLabel}>Current Price</div>
                 <div style={{...styles.priceValue, color: '#00c2c9'}}>
             Rs.{Number(item.currentPrice || item.startingPrice).toLocaleString()}
+                </div>
+        </div>
+              <div style={styles.priceCard}>
+                <div style={styles.priceLabel}>Quantity</div>
+                <div style={styles.priceValue}>
+                  {item.qty || item.quantity || 1} {item.unit || 'kg'}
                 </div>
         </div>
       </div>
@@ -424,28 +430,44 @@ const ItemDetails = () => {
           
       {isAuctionActive ? (
             userInfo ? (
-              <div style={styles.bidForm}>
-                <div style={styles.bidInputContainer}>
-                  <DollarSign size={20} style={styles.inputIcon} />
-            <input
-              type='text'
-              placeholder={`Minimum Rs.${minAllowed.toLocaleString()}`}
-              value={bidAmount}
-              onChange={handleBidInputChange}
-              onKeyPress={handleKeyPress}
-              disabled={isSubmittingBid}
-                    style={styles.bidInput}
-              autoComplete="off"
-            />
+              // Check if user is seller and this is their own item
+              userInfo.userType === 'seller' && userInfo.userId === item.sellerId ? (
+                <div style={styles.sellerRestriction}>
+                  <h4 style={styles.sellerRestrictionTitle}>🚫 Cannot Bid on Your Own Item</h4>
+                  <p style={styles.sellerRestrictionText}>
+                    As a seller, you cannot bid on your own fish lot. Switch to a buyer account to participate in auctions.
+                  </p>
+                  <button 
+                    style={styles.switchAccountButton}
+                    onClick={() => window.location.href = '/buyerlogin'}
+                  >
+                    Switch to Buyer Account
+                  </button>
                 </div>
-            <button
-              onClick={handleBid}
-              disabled={isSubmittingBid || !bidAmount || timeLeftSeconds <= 0}
-                  style={styles.bidButton}
-            >
-              {isSubmittingBid ? 'Placing Bid...' : 'Place Bid'}
-            </button>
-          </div>
+              ) : (
+                <div style={styles.bidForm}>
+                  <div style={styles.bidInputContainer}>
+                    <DollarSign size={20} style={styles.inputIcon} />
+              <input
+                type='text'
+                placeholder={`Minimum Rs.${minAllowed.toLocaleString()}`}
+                value={bidAmount}
+                onChange={handleBidInputChange}
+                onKeyPress={handleKeyPress}
+                disabled={isSubmittingBid}
+                style={styles.bidInput}
+                autoComplete="off"
+              />
+                  </div>
+              <button
+                onClick={handleBid}
+                disabled={isSubmittingBid || !bidAmount || timeLeftSeconds <= 0}
+                    style={styles.bidButton}
+              >
+                {isSubmittingBid ? 'Placing Bid...' : 'Place Bid'}
+              </button>
+            </div>
+              )
             ) : (
               <button 
                 style={styles.loginButton}
@@ -650,13 +672,13 @@ const styles = {
     right: '16px',
   },
   itemType: {
-    background: 'rgba(0, 194, 201, 0.2)',
+    background: 'rgba(0, 194, 201, 0.3)',
     color: '#00c2c9',
     padding: '6px 12px',
     borderRadius: '20px',
     fontSize: '12px',
-    fontWeight: '600',
-    border: '1px solid rgba(0, 194, 201, 0.3)',
+    fontWeight: '700',
+    border: '1px solid rgba(0, 194, 201, 0.5)',
   },
   itemInfo: {
     color: '#ffffff',
@@ -675,7 +697,7 @@ const styles = {
   },
   priceCards: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: '1fr 1fr 1fr',
     gap: '16px',
     marginBottom: '24px',
   },
@@ -779,22 +801,14 @@ const styles = {
   bidInput: {
     width: '100%',
     padding: '16px 16px 16px 48px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    background: 'rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '12px',
     color: '#ffffff',
     fontSize: '16px',
+    fontWeight: '500',
     outline: 'none',
-  },
-  bidInput: {
-    width: '100%',
-    padding: '16px 16px 16px 48px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '12px',
-    color: '#ffffff',
-    fontSize: '16px',
-    outline: 'none',
+    transition: 'all 0.3s ease',
   },
   bidButton: {
     padding: '16px 24px',
@@ -962,6 +976,37 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     minWidth: '140px',
+  },
+  sellerRestriction: {
+    background: 'rgba(239, 68, 68, 0.1)',
+    border: '2px solid rgba(239, 68, 68, 0.3)',
+    borderRadius: '16px',
+    padding: '30px',
+    textAlign: 'center',
+    backdropFilter: 'blur(10px)',
+  },
+  sellerRestrictionTitle: {
+    fontSize: '20px',
+    color: '#ef4444',
+    margin: '0 0 15px 0',
+    fontWeight: '600',
+  },
+  sellerRestrictionText: {
+    fontSize: '16px',
+    color: '#9ca3af',
+    margin: '0 0 25px 0',
+    lineHeight: '1.5',
+  },
+  switchAccountButton: {
+    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    padding: '12px 24px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
   },
 };
 

@@ -4,6 +4,8 @@ import http from 'http';
 import { Server } from 'socket.io';
 import connectDB from './util/DB.js';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import  itemRoutes from './routes/item.routes.js';
 import bidRoutes from './routes/bid.routes.js';
 import orderRoutes from './routes/order.routes.js';
@@ -18,6 +20,10 @@ dotenv.config();
 // Connect DB
 connectDB();
 
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
 //Allow all origins
@@ -25,6 +31,9 @@ app.use(cors());
 
 
 app.use(express.json());
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Create HTTP server & attach socket.io
 const server = http.createServer(app);

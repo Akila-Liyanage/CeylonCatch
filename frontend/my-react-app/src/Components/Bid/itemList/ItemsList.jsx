@@ -17,7 +17,7 @@ const ItemsList = () => {
     const fetchItems = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/items');
+        const response = await axios.get('http://localhost:5000/api/items/legacy/all');
         setItems(response.data);
       } catch (err) {
         setError(err?.response?.data?.message || 'Failed to load items');
@@ -33,7 +33,7 @@ const ItemsList = () => {
     setLoading(true);
     const fetchItems = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/items');
+        const response = await axios.get('http://localhost:5000/api/items/legacy/all');
         setItems(response.data);
       } catch (err) {
         setError(err?.response?.data?.message || 'Failed to load items');
@@ -51,7 +51,10 @@ const ItemsList = () => {
     
     const matchesFilter = filterType === 'All Types' || 
                          (filterType === 'Open' && item.status === 'open') ||
-                         (filterType === 'Closed' && item.status === 'closed');
+                         (filterType === 'Closed' && item.status === 'closed') ||
+                         (filterType === 'Draft' && item.status === 'draft') ||
+                         (filterType === 'Pending' && item.status === 'pending') ||
+                         (filterType === 'Sold' && item.status === 'sold');
     
     return matchesSearch && matchesFilter;
   });
@@ -59,6 +62,7 @@ const ItemsList = () => {
   // Calculate statistics
   const totalItems = items.length;
   const openItems = items.filter(item => item.status === 'open').length;
+  const draftItems = items.filter(item => item.status === 'draft').length;
 
   // Format time left
   const formatTimeLeft = (endTime) => {
@@ -82,6 +86,23 @@ const ItemsList = () => {
     const end = new Date(endTime);
     const diff = end.getTime() - now.getTime();
     return diff > 0 && diff < 5 * 60 * 1000;
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'open':
+        return { bg: 'rgba(16, 185, 129, 0.3)', border: '#10b981', color: '#10b981' };
+      case 'closed':
+        return { bg: 'rgba(239, 68, 68, 0.3)', border: '#ef4444', color: '#ef4444' };
+      case 'draft':
+        return { bg: 'rgba(156, 163, 175, 0.3)', border: '#9ca3af', color: '#9ca3af' };
+      case 'pending':
+        return { bg: 'rgba(245, 158, 11, 0.3)', border: '#f59e0b', color: '#f59e0b' };
+      case 'sold':
+        return { bg: 'rgba(139, 92, 246, 0.3)', border: '#8b5cf6', color: '#8b5cf6' };
+      default:
+        return { bg: 'rgba(156, 163, 175, 0.3)', border: '#9ca3af', color: '#9ca3af' };
+    }
   };
 
   if (loading) {
@@ -167,6 +188,14 @@ const ItemsList = () => {
             <span style={styles.statsNumber}>{openItems}</span>
             <span style={styles.statsLabel}>LIVE AUCTIONS</span>
           </motion.div>
+          <motion.div
+            style={styles.statsCard}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <span style={styles.statsNumber}>{draftItems}</span>
+            <span style={styles.statsLabel}>DRAFT ITEMS</span>
+          </motion.div>
         </div>
       </motion.div>
 
@@ -196,7 +225,10 @@ const ItemsList = () => {
           >
             <option value="All Types">All Types</option>
             <option value="Open">Open</option>
+            <option value="Pending">Pending</option>
+            <option value="Draft">Draft</option>
             <option value="Closed">Closed</option>
+            <option value="Sold">Sold</option>
           </select>
         </div>
         <div style={styles.viewToggle}>
@@ -323,14 +355,14 @@ const ItemsList = () => {
                     <span 
                       style={{
                         ...styles.statusBadge,
-                        backgroundColor: item.status === 'open' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                        borderColor: item.status === 'open' ? '#10b981' : '#ef4444',
-                        color: item.status === 'open' ? '#10b981' : '#ef4444'
+                        backgroundColor: getStatusColor(item.status).bg,
+                        borderColor: getStatusColor(item.status).border,
+                        color: getStatusColor(item.status).color
                       }}
                     >
                       <div style={{
                         ...styles.statusDot,
-                        backgroundColor: item.status === 'open' ? '#10b981' : '#ef4444'
+                        backgroundColor: getStatusColor(item.status).color
                       }}></div>
                       {item.status.toUpperCase()}
                     </span>
@@ -393,7 +425,7 @@ const ItemsList = () => {
                 >
                   <div style={styles.cardImageContainer}>
                     <img
-                      src={item.image || '/images/default-item.jpg'}
+                      src={item.images && item.images.length > 0 ? `http://localhost:5000/uploads/${item.images[0]}` : '/images/default-item.jpg'}
                       alt={item.name}
                       style={styles.cardImage}
                     />
@@ -401,13 +433,13 @@ const ItemsList = () => {
                       <span style={styles.itemType}>FRESH</span>
                       <span style={{
                         ...styles.statusBadge,
-                        backgroundColor: item.status === 'open' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                        borderColor: item.status === 'open' ? '#10b981' : '#ef4444',
-                        color: item.status === 'open' ? '#10b981' : '#ef4444'
+                        backgroundColor: getStatusColor(item.status).bg,
+                        borderColor: getStatusColor(item.status).border,
+                        color: getStatusColor(item.status).color
                       }}>
                         <div style={{
                           ...styles.statusDot,
-                          backgroundColor: item.status === 'open' ? '#10b981' : '#ef4444'
+                          backgroundColor: getStatusColor(item.status).color
                         }}></div>
                         {item.status.toUpperCase()}
                       </span>
@@ -722,12 +754,12 @@ const styles = {
     fontWeight: '500',
   },
   typeBadge: {
-    background: 'rgba(0, 194, 201, 0.2)',
+    background: 'rgba(0, 194, 201, 0.3)',
     color: '#00c2c9',
     padding: '4px 12px',
     borderRadius: '20px',
     fontSize: '12px',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   priceInfo: {
     display: 'flex',
@@ -750,8 +782,7 @@ const styles = {
     padding: '6px 12px',
     borderRadius: '20px',
     fontSize: '12px',
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: '700',
     border: '1px solid',
   },
   statusDot: {
@@ -822,13 +853,13 @@ const styles = {
     gap: '8px',
   },
   itemType: {
-    background: 'rgba(0, 194, 201, 0.2)',
+    background: 'rgba(0, 194, 201, 0.3)',
     color: '#00c2c9',
     padding: '6px 12px',
     borderRadius: '20px',
     fontSize: '12px',
-    fontWeight: '600',
-    border: '1px solid rgba(0, 194, 201, 0.3)',
+    fontWeight: '700',
+    border: '1px solid rgba(0, 194, 201, 0.5)',
   },
   cardContent: {
     padding: '24px',

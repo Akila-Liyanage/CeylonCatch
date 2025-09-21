@@ -89,11 +89,17 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   outline: none;
+  background-color: white;
+  color: #1f2937;
 }
 
 .buyer-login-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.buyer-login-input::placeholder {
+  color: #9ca3af;
 }
 
 .buyer-login-message {
@@ -174,3 +180,4 @@
     padding-right: 1rem;
   }
 }
+

@@ -7,6 +7,8 @@ import mongoose from 'mongoose';
 export const placeBid = async (req, res) => {
     try {
         const { itemId, userId, userName, bidAmount } = req.body;
+        
+        console.log('placeBid - Received bid data:', { itemId, userId, userName, bidAmount });
 
         if (!itemId || !userId || !userName || typeof bidAmount !== 'number') {
             return res.status(400).json({ message: 'itemId, userId, userName and numeric bidAmount are required' });
@@ -60,6 +62,8 @@ export const placeBid = async (req, res) => {
             bidAmount 
         });
         await newBid.save();
+        
+        console.log('placeBid - Bid saved successfully:', newBid);
 
         item.currentPrice = bidAmount;
         await item.save();
@@ -163,6 +167,15 @@ export const getUserBidHistory = async (req, res) => {
     try{
         const { userId } = req.params;
         console.log('getUserBidHistory - Looking for bids with userId:', userId);
+        
+        // First, let's check if there are any bids at all in the database
+        const totalBids = await Bid.countDocuments();
+        console.log('getUserBidHistory - Total bids in database:', totalBids);
+        
+        if (totalBids === 0) {
+            console.log('getUserBidHistory - No bids found in database');
+            return res.status(200).json([]);
+        }
 
         // Convert userId to ObjectId if it's a valid ObjectId string
         let userObjectId;
@@ -272,3 +285,15 @@ export const getUserBidHistory = async (req, res) => {
         res.status(500).json({message: "Error fetching bid history", err})
     }
 }
+
+// Test endpoint to get all bids (for debugging)
+export const getAllBids = async (req, res) => {
+    try {
+        const allBids = await Bid.find().populate('itemId', 'name').sort({ createdAt: -1 });
+        console.log('getAllBids - Found bids:', allBids.length);
+        res.status(200).json(allBids);
+    } catch (error) {
+        console.error('getAllBids - Error:', error);
+        res.status(500).json({ message: 'Error fetching all bids', error: error.message });
+    }
+};

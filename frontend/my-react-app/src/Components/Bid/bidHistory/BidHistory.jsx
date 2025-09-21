@@ -81,8 +81,8 @@ const BidHistory = () => {
 
                 setUserInfo({ userId: actualUserId, userName, originalId: id });
 
-                // Fetch bid history using the user ID (could be email or MongoDB _id)
-                const bidResponse = await axios.get(`http://localhost:5000/api/bids/history/${id}`);
+                // Fetch bid history using the actual user ID (MongoDB _id)
+                const bidResponse = await axios.get(`http://localhost:5000/api/bids/history/${actualUserId}`);
                 console.log('BidHistory - Bid response:', bidResponse.data);
                 
                 setBids(Array.isArray(bidResponse.data) ? bidResponse.data : []);
@@ -112,8 +112,9 @@ const BidHistory = () => {
         // Re-trigger the fetch for the current user ID
         const fetchBidHistoryForUser = async () => {
             try {
-                console.log('BidHistory - Refreshing bid history for user ID:', id);
-                const bidResponse = await axios.get(`http://localhost:5000/api/bids/history/${id}`);
+                const userIdToUse = userInfo?.userId || id;
+                console.log('BidHistory - Refreshing bid history for user ID:', userIdToUse);
+                const bidResponse = await axios.get(`http://localhost:5000/api/bids/history/${userIdToUse}`);
                 console.log('BidHistory - Refresh bid response:', bidResponse.data);
                 setBids(Array.isArray(bidResponse.data) ? bidResponse.data : []);
             } catch (error) {
@@ -154,8 +155,8 @@ const BidHistory = () => {
 
     // Filter bids based on search term
     const filteredBids = bids.filter(bid => 
-        bid.ItemId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        bid.ItemId?.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        bid.itemId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        bid.itemId?.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Calculate statistics
@@ -349,7 +350,6 @@ const BidHistory = () => {
                             {/* Table Header */}
                             <div style={styles.tableHeader}>
                                 <div style={styles.headerCell}>NAME</div>
-                                <div style={styles.headerCell}>SKU</div>
                                 <div style={styles.headerCell}>TYPE</div>
                                 <div style={styles.headerCell}>PRICE</div>
                                 <div style={styles.headerCell}>STATUS</div>
@@ -375,17 +375,12 @@ const BidHistory = () => {
                                             <div style={styles.itemInfo}>
                                                 <div style={styles.itemIcon}>🐟</div>
                                                 <span style={styles.itemName}>
-                                                    {bid.ItemId?.name || 'Unknown Item'}
+                                                    {bid.itemId?.name || 'Unknown Item'}
                                                 </span>
                                             </div>
                                         </div>
                                         <div style={styles.tableCell}>
-                                            <span style={styles.skuText}>
-                                                SKU-{bid._id.slice(-4).toUpperCase()}
-                                            </span>
-                                        </div>
-                                        <div style={styles.tableCell}>
-                                            <span style={styles.typeBadge}>FRESH</span>
+                                            <span style={styles.typeBadge}>{bid.itemId?.fishType || 'FRESH'}</span>
                                         </div>
                                         <div style={styles.tableCell}>
                                             <span style={styles.priceText}>
@@ -405,7 +400,7 @@ const BidHistory = () => {
                                 </div>
                                         <div style={styles.tableCell}>
                                             <span style={styles.qualityBadge}>
-                                                {bidStatus === 'leading' ? 'GOOD (9D)' : 'MEDIUM (6D)'}
+                                                {bid.itemId?.quality || 'Grade A'}
                                             </span>
                                         </div>
                                         <div style={styles.tableCell}>
@@ -422,7 +417,7 @@ const BidHistory = () => {
                                                     style={{...styles.actionButton, backgroundColor: '#10b981'}}
                                                     whileHover={{ scale: 1.1 }}
                                                     whileTap={{ scale: 0.9 }}
-                                                    onClick={() => window.location.href = `/items/${bid.itemId}`}
+                                                    onClick={() => window.location.href = `/items/${bid.itemId?._id}`}
                                                 >
                                                     <TrendingUp size={16} />
                                                 </motion.button>
@@ -600,7 +595,7 @@ const styles = {
     },
     tableHeader: {
         display: 'grid',
-        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr',
+        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr',
         background: 'rgba(0, 194, 201, 0.1)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
     },
@@ -614,7 +609,7 @@ const styles = {
     },
     tableRow: {
         display: 'grid',
-        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr',
+        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         transition: 'background-color 0.2s ease',
     },

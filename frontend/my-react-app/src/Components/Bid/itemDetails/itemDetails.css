@@ -176,7 +176,7 @@
 /* Price Cards */
 .price-cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -344,11 +344,12 @@
 .bid-input {
     width: 100%;
     padding: 16px 16px 16px 48px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     color: #ffffff;
     font-size: 16px;
+    font-weight: 500;
     outline: none;
     transition: all 0.3s ease;
 }
@@ -360,7 +361,9 @@
 }
 
 .bid-input::placeholder {
-    color: #6b7280;
+    color: #00c2c9;
+    opacity: 0.9;
+    font-weight: 500;
 }
 
 .bid-button {
@@ -653,6 +656,10 @@
     
     .bid-section {
         order: -1;
+    }
+    
+    .price-cards {
+        grid-template-columns: 1fr 1fr;
     }
 }
 

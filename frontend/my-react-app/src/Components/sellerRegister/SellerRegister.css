@@ -89,11 +89,17 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   outline: none;
+  background-color: white;
+  color: #1f2937;
 }
 
 .seller-register-input:focus {
   border-color: #06b6d4;
   box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.5);
+}
+
+.seller-register-input::placeholder {
+  color: #9ca3af;
 }
 
 .seller-register-button {
@@ -158,3 +164,4 @@
     padding-right: 1rem;
   }
 }
+
