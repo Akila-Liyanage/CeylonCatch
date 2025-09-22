@@ -11,7 +11,7 @@ const inventorySchema = new mongoose.Schema({
     imageURL: { type: String },
     dateAdded: { type: Date, default: Date.now },
     expiryDate: { type: Date, required: true },
-    sellerEmail: { type: String, required: false, default: 'admin@ceyloncatch.com' } // Add seller email field
+    sellerEmail: { type: String, required: true } // Add seller email field
 }, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
 // Virtual: days left until expiry

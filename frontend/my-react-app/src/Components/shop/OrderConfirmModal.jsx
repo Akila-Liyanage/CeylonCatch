@@ -58,8 +58,7 @@ const OrderConfirmModal = ({
         let selectedSavedCard = null;
         if (method.startsWith('saved:')) {
             const id = method.split(':')[1];
-            // For now, set to null since savedCards is not implemented
-            selectedSavedCard = null;
+            selectedSavedCard = savedCards.find(c => c.id === id) || null;
         }
         onPlaceOrder({                                           // Pass all order details...
             ...item,
