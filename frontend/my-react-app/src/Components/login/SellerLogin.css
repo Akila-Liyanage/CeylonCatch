@@ -12,6 +12,22 @@
     radial-gradient(#00c2c9 0.5px, #e9fbfd 0.5px);
   background-size: 20px 20px;
   background-position: 0 0, 10px 10px;
+  color: #1f2937 !important;
+}
+
+.seller-login-container * {
+  color: inherit;
+}
+
+/* Ensure all text elements are visible */
+.seller-login-container h1,
+.seller-login-container h2,
+.seller-login-container h3,
+.seller-login-container p,
+.seller-login-container label,
+.seller-login-container small,
+.seller-login-container .form-help {
+  color: #1f2937 !important;
 }
 
 .seller-login-card {
@@ -89,17 +105,21 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   outline: none;
-  background-color: white;
-  color: #1f2937;
+  background-color: white !important;
+  color: #1f2937 !important;
+  font-weight: 500;
 }
 
 .seller-login-input:focus {
   border-color: #06b6d4;
   box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.5);
+  background-color: white !important;
+  color: #1f2937 !important;
 }
 
 .seller-login-input::placeholder {
-  color: #9ca3af;
+  color: #9ca3af !important;
+  font-weight: 400;
 }
 
 .seller-login-message {

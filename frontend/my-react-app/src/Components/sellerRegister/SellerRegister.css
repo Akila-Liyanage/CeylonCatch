@@ -12,6 +12,22 @@
     radial-gradient(#00c2c9 0.5px, #e9fbfd 0.5px);
   background-size: 20px 20px;
   background-position: 0 0, 10px 10px;
+  color: #1f2937 !important;
+}
+
+.seller-register-container * {
+  color: inherit;
+}
+
+/* Ensure all text elements are visible */
+.seller-register-container h1,
+.seller-register-container h2,
+.seller-register-container h3,
+.seller-register-container p,
+.seller-register-container label,
+.seller-register-container small,
+.seller-register-container .form-help {
+  color: #1f2937 !important;
 }
 
 .seller-register-card {
@@ -89,17 +105,21 @@
   font-size: 1rem;
   transition: all 0.3s ease;
   outline: none;
-  background-color: white;
-  color: #1f2937;
+  background-color: white !important;
+  color: #1f2937 !important;
+  font-weight: 500;
 }
 
 .seller-register-input:focus {
   border-color: #06b6d4;
   box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.5);
+  background-color: white !important;
+  color: #1f2937 !important;
 }
 
 .seller-register-input::placeholder {
-  color: #9ca3af;
+  color: #9ca3af !important;
+  font-weight: 400;
 }
 
 .seller-register-button {

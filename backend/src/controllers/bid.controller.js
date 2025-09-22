@@ -188,7 +188,7 @@ export const getUserBidHistory = async (req, res) => {
 
         // First, try to find bids directly with the userId (as ObjectId or string)
         let bids = await Bid.find({ userId: userObjectId })
-        .populate("itemId", "name image description") // show item details
+        .populate("itemId", "name image description fishType quality") // show item details
         .sort({createdAt: -1});
 
         console.log('getUserBidHistory - Found bids directly:', bids.length);
@@ -209,7 +209,7 @@ export const getUserBidHistory = async (req, res) => {
                     console.log('getUserBidHistory - Found user with _id:', user._id);
                     // Try to find bids with the user's _id as ObjectId
                     bids = await Bid.find({ userId: user._id })
-                    .populate("itemId", "name image description")
+                    .populate("itemId", "name image description fishType quality")
                     .sort({createdAt: -1});
                     console.log('getUserBidHistory - Found bids with _id:', bids.length);
                 }
@@ -235,7 +235,7 @@ export const getUserBidHistory = async (req, res) => {
                     // Try to find bids with the user's email (for backward compatibility)
                     // Now that we use Mixed type, this should work
                     bids = await Bid.find({ userId: user.gmail })
-                    .populate("itemId", "name image description")
+                    .populate("itemId", "name image description fishType quality")
                     .sort({createdAt: -1});
                     console.log('getUserBidHistory - Found bids with email:', bids.length);
                 }

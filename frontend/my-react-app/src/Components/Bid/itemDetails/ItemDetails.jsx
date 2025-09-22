@@ -450,7 +450,7 @@ const ItemDetails = () => {
                     <DollarSign size={20} style={styles.inputIcon} />
               <input
                 type='text'
-                placeholder={`Minimum Rs.${minAllowed.toLocaleString()}`}
+                placeholder={`Minimum bid: Rs.${minAllowed.toLocaleString()}`}
                 value={bidAmount}
                 onChange={handleBidInputChange}
                 onKeyPress={handleKeyPress}
@@ -459,12 +459,21 @@ const ItemDetails = () => {
                 autoComplete="off"
               />
                   </div>
+                  {bidAmount && parseFloat(bidAmount) < minAllowed && (
+                    <div style={styles.bidValidationMessage}>
+                      Bid must be at least Rs.{minAllowed.toLocaleString()}
+                    </div>
+                  )}
               <button
                 onClick={handleBid}
-                disabled={isSubmittingBid || !bidAmount || timeLeftSeconds <= 0}
+                disabled={isSubmittingBid || !bidAmount || timeLeftSeconds <= 0 || parseFloat(bidAmount) < minAllowed}
                     style={styles.bidButton}
               >
-                {isSubmittingBid ? 'Placing Bid...' : 'Place Bid'}
+                {isSubmittingBid ? 'Placing Bid...' : 
+                 timeLeftSeconds <= 0 ? 'Auction Ended' :
+                 !bidAmount ? 'Enter Bid Amount' :
+                 parseFloat(bidAmount) < minAllowed ? `Minimum Rs.${minAllowed.toLocaleString()}` :
+                 'Place Bid'}
               </button>
             </div>
               )
@@ -809,6 +818,13 @@ const styles = {
     fontWeight: '500',
     outline: 'none',
     transition: 'all 0.3s ease',
+  },
+  bidValidationMessage: {
+    fontSize: '12px',
+    color: '#ef4444',
+    marginTop: '8px',
+    textAlign: 'center',
+    fontWeight: '500',
   },
   bidButton: {
     padding: '16px 24px',
