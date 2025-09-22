@@ -3,7 +3,8 @@ import Transaction from '../../models/finance.model/Transaction.model.js';
 // Create transaction
 export const createTransaction = async (req, res) => {
   try {
-    const tx = new Transaction({ ...req.body, userId: req.user.id });
+    const fallbackUserId = req.body?.userId || 'guest';
+    const tx = new Transaction({ ...req.body, userId: req.user?.id || fallbackUserId });
     await tx.save();
     res.status(201).json(tx);
   } catch (err) {

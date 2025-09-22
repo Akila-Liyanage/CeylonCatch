@@ -1,0 +1,376 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.success-modal {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.success-content {
+    padding: 40px 30px 30px;
+    text-align: center;
+}
+
+.success-icon {
+    margin-bottom: 30px;
+}
+
+.success-icon div {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px rgba(45, 212, 191, 0.3);
+}
+
+.success-content h2 {
+    color: #1e293b;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 15px 0;
+}
+
+.success-message {
+    color: #64748b;
+    font-size: 1.1rem;
+    margin: 0 0 40px 0;
+    line-height: 1.6;
+}
+
+.payment-details {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.payment-details h3 {
+    color: #2dd4bf;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    text-align: center;
+}
+
+.details-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-item .label {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.detail-item .value {
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.detail-item .value.amount {
+    color: #2dd4bf;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.next-steps {
+    background: #f0fdfa;
+    border: 1px solid rgba(45, 212, 191, 0.2);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.next-steps h3 {
+    color: #2dd4bf;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+    text-align: center;
+}
+
+.next-steps ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.next-steps li {
+    color: #475569;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.next-steps li:last-child {
+    margin-bottom: 0;
+}
+
+.contact-info {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.contact-info p {
+    margin: 0;
+    color: #92400e;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.contact-info a {
+    color: #2dd4bf;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.contact-info a:hover {
+    text-decoration: underline;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    padding: 0 30px 30px;
+}
+
+.print-btn,
+.orders-btn,
+.done-btn {
+    flex: 1;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.print-btn {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+.print-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+}
+
+.orders-btn {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    color: white;
+}
+
+.orders-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(71, 85, 105, 0.4);
+}
+
+.done-btn {
+    background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
+    color: white;
+}
+
+.done-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(45, 212, 191, 0.4);
+}
+
+/* Print Styles */
+@media print {
+    .modal-overlay {
+        position: static;
+        background: none;
+        padding: 0;
+    }
+
+    .success-modal {
+        box-shadow: none;
+        border-radius: 0;
+        max-width: none;
+        width: 100%;
+    }
+
+    .modal-actions {
+        display: none;
+    }
+
+    .success-content {
+        padding: 20px;
+    }
+
+    .success-icon div {
+        width: 80px;
+        height: 80px;
+        font-size: 2.5rem;
+    }
+}
+
+/* Receipt Modal */
+.receipt-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.receipt-modal {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.receipt-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.receipt-modal-header h2 {
+    margin: 0;
+    color: #2dd4bf;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.receipt-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.download-receipt-btn,
+.close-receipt-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.download-receipt-btn {
+    background: #2dd4bf;
+    color: white;
+}
+
+.download-receipt-btn:hover {
+    background: #14b8a6;
+    transform: translateY(-1px);
+}
+
+.close-receipt-btn {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.close-receipt-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+}
+
+.receipt-content {
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .success-modal {
+        margin: 10px;
+        max-width: none;
+    }
+
+    .success-content {
+        padding: 30px 20px 20px;
+    }
+
+    .success-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .success-icon div {
+        width: 80px;
+        height: 80px;
+        font-size: 2.5rem;
+    }
+
+    .payment-details,
+    .next-steps,
+    .contact-info {
+        padding: 20px;
+    }
+
+    .modal-actions {
+        padding: 0 20px 20px;
+        flex-direction: column;
+    }
+
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .detail-item .value {
+        font-size: 0.85rem;
+    }
+}

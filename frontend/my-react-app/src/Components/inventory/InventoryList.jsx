@@ -308,10 +308,10 @@ const InventoryList = () => {
             <h2 class="section-title">Comments & Notes</h2>
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
               <ul style="margin: 0; padding-left: 20px;">
-                <li>Total inventory value: <strong>$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></li>
+                <li>Total inventory value: <strong>LKR ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></li>
                 <li>${lowStockItems} items require restocking attention</li>
                 <li>${outOfStockItems} items are currently out of stock</li>
-                <li>Average item value: <strong>$${totalItems > 0 ? (totalValue / totalItems).toFixed(2) : '0.00'}</strong></li>
+                <li>Average item value: <strong>LKR ${totalItems > 0 ? (totalValue / totalItems).toFixed(2) : '0.00'}</strong></li>
                 <li>Report generated on ${new Date().toLocaleString()}</li>
               </ul>
             </div>
@@ -361,7 +361,7 @@ const InventoryList = () => {
               <div className="stat-label">Out of Stock</div>
             </div>
             <div className="stat-card">
-              <div className="stat-value">${items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}</div>
+              <div className="stat-value">LKR {items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}</div>
               <div className="stat-label">Total Value</div>
             </div>
           </div>
@@ -477,9 +477,9 @@ const InventoryList = () => {
                         <span className="type-badge">{it.type}</span>
                       </td>
                       <td className="price-cell" style={{textAlign: 'right'}}>
-                        <div style={{fontWeight: '700', fontSize: '1.1rem'}}>${Number(it.price).toFixed(2)}</div>
+                        <div style={{fontWeight: '700', fontSize: '1.1rem'}}>LKR {Number(it.price).toFixed(2)}</div>
                         <div style={{fontSize: '0.8rem', color: '#9ca3af'}}>
-                          Total: ${(Number(it.price) * it.quantity).toFixed(2)}
+                          Total: LKR {(Number(it.price) * it.quantity).toFixed(2)}
                         </div>
                       </td>
                       <td className="stock-cell" style={{textAlign: 'center'}}>

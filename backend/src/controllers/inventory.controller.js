@@ -100,3 +100,35 @@ export const getInventoryBySeller = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// ✅ Reduce quantity after purchase
+export const reduceQuantity = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { quantity } = req.body;
+
+        if (!quantity || quantity <= 0) {
+            return res.status(400).json({ error: 'Quantity must be a positive number' });
+        }
+
+        const item = await Inventory.findById(id);
+        if (!item) {
+            return res.status(404).json({ error: 'Item not found' });
+        }
+
+        if (item.quantity < quantity) {
+            return res.status(400).json({ error: 'Insufficient quantity in stock' });
+        }
+
+        item.quantity -= quantity;
+        await item.save();
+
+        res.json({
+            message: 'Quantity reduced successfully',
+            item: item,
+            remainingQuantity: item.quantity
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};

@@ -14,6 +14,7 @@ import financeRoutes from './routes/finance.routes.js';
 import userRoutes from './routes/user.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import payhereRoutes from './routes/payhere.routes.js';
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ app.use('/api/finance', financeRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/payhere', payhereRoutes);
 
 
 

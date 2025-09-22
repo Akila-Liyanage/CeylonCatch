@@ -3,13 +3,28 @@ import Order from "../models/Order.model.js";
 //create a new order
 export const createOrder = async (req, res) => {
     try {
-        const { userId, items, totalPrice } = req.body;
+        const { userId, items, totalPrice, paymentDetails, customerDetails } = req.body;
 
-        const order = new Order({ userId, items, totalPrice });
+        // Validate required fields
+        if (!userId || !items || !totalPrice || !paymentDetails) {
+            return res.status(400).json({ 
+                message: 'Missing required fields: userId, items, totalPrice, and paymentDetails are required' 
+            });
+        }
+
+        const order = new Order({ 
+            userId, 
+            items, 
+            totalPrice, 
+            paymentDetails, 
+            customerDetails 
+        });
+        
         await order.save();
 
         res.status(201).json(order);
     } catch (error) {
+        console.error('Error creating order:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -37,17 +52,6 @@ export const getOrderById = async (req, res) => {
     }
 };
 
-//Get orders by user ID
-export const getOrdersByUserId = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const orders = await Order.find({ userId }).sort({ createdAt: -1 });
-        res.status(200).json(orders);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
 //Update order status
 export const updateOrderStatus = async (req, res) => {
     try {
@@ -61,6 +65,17 @@ export const updateOrderStatus = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
         res.status(200).json(order);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+//Get orders by user ID
+export const getOrdersByUserId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const orders = await Order.find({ userId }).sort({ createdAt: -1 });
+        res.status(200).json(orders);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
