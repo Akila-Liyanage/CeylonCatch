@@ -16,6 +16,9 @@ import CustomerOrderForm from './Components/Order/Order/CustomerOrderForm'
 import CustomerOrderHistory from './Components/Order/Order/CustomerOrderHistory'
 import AdminOrderManagement from './Components/Order/Order/AdminOrderManagement'
 import AddFishLot from './Components/fishLot/AddFishLot'
+import InventoryList from './Components/inventory/InventoryList'
+import ProductGrid from './Components/inventory/ProductGrid'
+import SellerInventory from './Components/seller/SellerInventory'
 
 const App = () => {
   return (
@@ -31,11 +34,14 @@ const App = () => {
         <Route path="/bdashboard" element={<BuyerDashboard/>}/>
         <Route path="/sdashboard" element={<SellerDashboard/>}/>
         <Route path="/bidHistory/:id" element={<BidHistory/>}/>
-        <Route path="/admindashboard" element={<AdminDashboard/>}/>
+        <Route path="/admin" element={<AdminDashboard/>}/>
         <Route path="/order" element={<CustomerOrderForm/>}/>
         <Route path="/order-history" element={<CustomerOrderHistory/>}/>
         <Route path="/admin-orders" element={<AdminOrderManagement/>}/>
         <Route path="/add-fish-lot" element={<AddFishLot/>}/>
+        <Route path="/inventory" element={<InventoryList/>}/>
+        <Route path="/products" element={<ProductGrid/>}/>
+        <Route path="/seller-inventory" element={<SellerInventory/>}/>
       </Routes>
     </Router>
   )

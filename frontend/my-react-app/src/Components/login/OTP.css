@@ -11,6 +11,11 @@
     radial-gradient(circle at 75% 75%, rgba(0, 194, 201, 0.08) 0%, transparent 50%);
   position: relative;
   overflow: hidden;
+  color: #1f2937 !important;
+}
+
+.otp-container * {
+  color: inherit;
 }
 
 .otp-container::before {
@@ -125,7 +130,7 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: #374151 !important;
   margin-bottom: 0.5rem;
 }
 
@@ -140,6 +145,8 @@
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(5px);
+  color: #1f2937 !important;
+  font-weight: 600;
 }
 
 .otp-input:focus {
@@ -149,11 +156,13 @@
     0 0 0 3px rgba(0, 194, 201, 0.1),
     0 4px 12px rgba(0, 194, 201, 0.15);
   background: white;
+  color: #1f2937 !important;
 }
 
 .otp-input::placeholder {
-  color: #9ca3af;
+  color: #9ca3af !important;
   letter-spacing: normal;
+  font-weight: 400;
 }
 
 .otp-message {

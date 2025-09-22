@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import './AdminDashboard.css';
+import InventoryList from '../inventory/InventoryList';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('users');
@@ -7,7 +8,8 @@ const AdminDashboard = () => {
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'orders', label: 'Orders' },
-    { id: 'products', label: 'Products' },
+    { id: 'inventory', label: 'Inventory' },
+    { id: 'bids', label: 'Bids' },
     { id: 'users', label: 'Users' },
     { id: 'reports', label: 'Reports' },
     { id: 'market', label: 'Market' }
@@ -29,11 +31,16 @@ const AdminDashboard = () => {
             <p className="admin-content-message">No orders yet.</p>
           </div>
         );
-      case 'products':
+      case 'inventory':
         return (
-          <div className="admin-content">
-            <h2 className="admin-content-title">Products</h2>
-            <p className="admin-content-message">No products yet.</p>
+          <div className="inventory-wrapper">
+            <InventoryList />
+          </div>
+        );
+      case 'bids':
+        return (
+          <div className="bids-wrapper">
+            <BidManagement />
           </div>
         );
       case 'users':
@@ -60,8 +67,8 @@ const AdminDashboard = () => {
       default:
         return (
           <div className="admin-content">
-            <h2 className="admin-content-title">Dashboard</h2>
-            <p className="admin-content-message">Welcome to the admin dashboard.</p>
+            <h2 className="admin-content-title">Inventory</h2>
+            <p className="admin-content-message"> Inventories.</p>
           </div>
         );
     }
@@ -88,7 +95,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="admin-main">
+      <div className={`admin-main ${activeTab === 'inventory' ? 'inventory-active' : ''} ${activeTab === 'bids' ? 'bids-active' : ''}`}>
         {renderContent()}
       </div>
     </div>

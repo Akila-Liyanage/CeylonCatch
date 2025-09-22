@@ -21,6 +21,7 @@ import {
   FaPause,
   FaUpload,
 } from "react-icons/fa";
+import SellerInventory from '../inventory/SellerInventory';
 import './SellerDashboard.css';
 
 const SellerDashboard = () => {
@@ -31,7 +32,7 @@ const SellerDashboard = () => {
   const [editData, setEditData] = useState({});
   
   // Fish lot management states
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'fishlots'
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'fishlots', or 'inventory'
   const [fishLots, setFishLots] = useState([]);
   const [fishLotLoading, setFishLotLoading] = useState(false);
   const [showAddFishLot, setShowAddFishLot] = useState(false);
@@ -208,6 +209,13 @@ const SellerDashboard = () => {
           >
             <FaFish className="seller-tab-icon" />
             Fish Lots
+          </button>
+          <button 
+            className={`seller-tab-btn ${activeTab === 'inventory' ? 'active' : ''}`}
+            onClick={() => setActiveTab('inventory')}
+          >
+            <FaBox className="seller-tab-icon" />
+            Inventory
           </button>
         </div>
 
@@ -471,6 +479,12 @@ const SellerDashboard = () => {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'inventory' && (
+          <div className="inventory-tab-content">
+            <SellerInventory />
           </div>
         )}
       </div>
