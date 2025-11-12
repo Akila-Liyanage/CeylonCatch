@@ -12,15 +12,25 @@ A comprehensive fish and seafood marketplace platform that connects buyers and s
 - User dashboard with order management
 
 ### For Sellers
+- **Separate Inventory Management**: Each seller has their own independent inventory system
+  - Add new inventory items with details (name, quantity, price, description, images)
+  - View all their inventory items in a dedicated dashboard
+  - Update existing inventory items (modify prices, quantities, descriptions)
+  - Delete inventory items when no longer available
 - Create and manage fish lots
 - Upload fish lot images
 - Monitor bids in real-time
-- Manage inventory
 - Track sales and orders
 - Seller dashboard with analytics
 
 ### For Administrators
 - Complete admin dashboard
+- **Centralized Inventory Management**: 
+  - View all inventories from all sellers in one unified dashboard
+  - Monitor inventory levels across all sellers
+  - Manage and oversee all inventory items
+  - Add, update, or delete any inventory item from any seller
+  - Track inventory statistics and analytics
 - User management (Buyers, Sellers, Employees)
 - Financial management:
   - Payroll system
@@ -203,9 +213,11 @@ CeylonCatch/
 - `PUT /api/orders/:id` - Update order status
 
 ### Inventory
-- `GET /api/inventory` - Get inventory
-- `POST /api/inventory` - Add inventory item
-- `PUT /api/inventory/:id` - Update inventory item
+- `GET /api/inventory` - Get inventory (sellers see only their items, admin sees all)
+- `GET /api/inventory/:id` - Get specific inventory item
+- `POST /api/inventory` - Add inventory item (Seller/Admin)
+- `PUT /api/inventory/:id` - Update inventory item (Seller can update own, Admin can update any)
+- `DELETE /api/inventory/:id` - Delete inventory item (Seller can delete own, Admin can delete any)
 
 ### Finance (Admin)
 - `GET /api/finance/employees` - Get employees
@@ -221,6 +233,17 @@ CeylonCatch/
 - `DELETE /api/admin/users/:id` - Delete user
 
 ## 🎨 Key Features Implementation
+
+### Multi-Seller Inventory System
+- **Seller-Specific Inventories**: Each seller maintains their own separate inventory
+  - Sellers can only view, add, update, and delete their own inventory items
+  - Complete CRUD operations (Create, Read, Update, Delete) for each seller's inventory
+  - Inventory isolation ensures data privacy and organization
+- **Admin Oversight**: Administrators have full visibility and control
+  - View all inventories from all sellers in a centralized dashboard
+  - Manage any inventory item from any seller
+  - Monitor inventory levels, pricing, and availability across the platform
+  - Generate comprehensive inventory reports
 
 ### Real-time Bidding
 - Uses Socket.io for real-time bid updates
@@ -295,7 +318,7 @@ This project is licensed under the ISC License.
 
 ## 📞 Support
 
-For support, email your-email@example.com or open an issue in the repository.
+For support, email akilaprasad001@gmail.com or open an issue in the repository.
 
 ---
 
