@@ -99,7 +99,7 @@ const OrderConfirmModal = ({
                         <button className="close-btn" onClick={onClose}>×</button>
                     </div>
 
-                    <div className="modal-content">
+                    <div className="modal-conten">
                         {/* Item details */}
                         <div className="block">
                             <h3>Items' details</h3>

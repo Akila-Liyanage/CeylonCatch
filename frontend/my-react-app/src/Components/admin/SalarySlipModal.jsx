@@ -14,10 +14,13 @@ const SalarySlipModal = ({ open, onClose }) => {//store
     const [error, setError] = useState('');
     const [paying, setPaying] = useState(false);
     const [payMsg, setPayMsg] = useState('');
+    const [isAlreadyPaid, setIsAlreadyPaid] = useState(false);
 
     const handleCalculate = async () => {
         setError('');
         setSlip(null); //holds the calculated salary slip data (from backend)
+        setIsAlreadyPaid(false);
+        setPayMsg('');
         if (!employeeId || !month) {
             setError('Employee ID and Month are required');
             return;
@@ -26,6 +29,15 @@ const SalarySlipModal = ({ open, onClose }) => {//store
             setLoading(true);
             const [y, m] = month.split('-').map(Number);
             const id = String(employeeId).trim().toUpperCase();
+
+            // First check if salary is already paid
+            const checkRes = await axios.get(`http://localhost:5000/api/finance/salaries?employeeId=${id}&month=${m}&year=${y}&status=paid`);
+
+            if (checkRes.data && checkRes.data.length > 0) {
+                setIsAlreadyPaid(true);
+                setPayMsg('⚠️ Salary already paid for this employee and month!');
+            }
+
             const res = await axios.post('http://localhost:5000/api/finance/payroll/calculate-slip', {
                 employeeId: id,
                 month: m,
@@ -44,6 +56,23 @@ const SalarySlipModal = ({ open, onClose }) => {//store
         setPayMsg('');
         try {
             setPaying(true);
+
+            // First check if salary is already paid for this employee and month
+            const checkRes = await axios.get(`http://localhost:5000/api/finance/salaries?employeeId=${slip.employee?.employeeId}&month=${slip?.period?.month}&year=${slip?.period?.year}`);
+
+            if (checkRes.data && checkRes.data.length > 0) {
+                const existingPayment = checkRes.data.find(payment =>
+                    payment.employeeId === slip.employee?.employeeId &&
+                    payment.status === 'paid'
+                );
+
+                if (existingPayment) {
+                    setPayMsg('❌ Salary already paid for this employee and month!');
+                    return;
+                }
+            }
+
+            // If not paid, proceed with payment
             const res = await axios.post('http://localhost:5000/api/finance/salaries', {
                 employeeId: slip.employee?.employeeId,
                 role: 'employee',
@@ -52,12 +81,16 @@ const SalarySlipModal = ({ open, onClose }) => {//store
                 year: slip?.period?.year,
             });
             if (res?.data?._id) {
-                setPayMsg('Salary marked as paid.');
+                setPayMsg('✅ Salary marked as paid successfully!');
             } else {
-                setPayMsg('Payment recorded.');
+                setPayMsg('✅ Payment recorded successfully!');
             }
         } catch (e) {
-            setPayMsg(e?.response?.data?.error || 'Failed to record payment');
+            if (e?.response?.status === 409) {
+                setPayMsg('❌ Salary already paid for this employee and month!');
+            } else {
+                setPayMsg('❌ ' + (e?.response?.data?.error || 'Failed to record payment'));
+            }
         } finally {
             setPaying(false);
         }
@@ -99,10 +132,10 @@ const SalarySlipModal = ({ open, onClose }) => {//store
         });
 
         const logoData = await toDataURL(logoUrl);
-        
+
         // Header with logo and template-like layout
         const logoW = 130, logoH = 130;
-        doc.addImage(logoData, 'PNG',  margin , y - 45, logoW, logoH);
+        doc.addImage(logoData, 'PNG', margin, y - 45, logoW, logoH);
         doc.setFontSize(26);
         doc.text('CeylonCatch Ltd', pageWidth / 2, y + 10, { align: 'center' });
         doc.setFontSize(11);
@@ -115,7 +148,7 @@ const SalarySlipModal = ({ open, onClose }) => {//store
 
         const periodStr = `${slip?.period?.month}/${slip?.period?.year}`;
         text(`Employee Name: ${slip?.employee?.fullName || ''}`, margin, y, 12); y += lineGap - 2;
-         text(`Designation: -`, margin, y, 12); y += lineGap - 2;
+        text(`Designation: -`, margin, y, 12); y += lineGap - 2;
         text(`Month: ${periodStr}          Year: ${slip?.period?.year}`, margin, y, 12); y += lineGap;
         hr(y); y += 12;
 
@@ -208,11 +241,11 @@ const SalarySlipModal = ({ open, onClose }) => {//store
                     <div className="grid two">
                         <div className="field" >
                             <label>Employee ID</label>
-                            <input value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} placeholder="EMP-..." />
+                            <input className='labe' value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} placeholder="EMP-..." />
                         </div>
                         <div className="field">
                             <label>Month</label>
-                            <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
+                            <input className='labe' type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
                         </div>
                     </div>
                     <button className="btn primary" onClick={handleCalculate} disabled={loading}>
@@ -253,8 +286,22 @@ const SalarySlipModal = ({ open, onClose }) => {//store
                             </div>
                             <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
                                 <button className="btn" onClick={downloadPdf}>Download PDF</button>
-                                <button className="btn primary" onClick={handlePay} disabled={paying}>{paying ? 'Paying...' : 'Pay'}</button>
-                                {payMsg && <span style={{ fontSize: 12 }}>{payMsg}</span>}
+                                <button
+                                    className={`btn ${isAlreadyPaid ? 'btn-disabled' : 'primary'}`}
+                                    onClick={handlePay}
+                                    disabled={paying || isAlreadyPaid}
+                                >
+                                    {paying ? 'Paying...' : isAlreadyPaid ? 'Already Paid' : 'Pay'}
+                                </button>
+                                {payMsg && (
+                                    <span style={{
+                                        fontSize: 12,
+                                        color: isAlreadyPaid ? '#f59e0b' : payMsg.includes('✅') ? '#10b981' : '#ef4444',
+                                        fontWeight: '500'
+                                    }}>
+                                        {payMsg}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     )}

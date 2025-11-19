@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useParams } from 'react-router'
 import axios from 'axios'
-import io from 'socket.io-client'
+import {io} from 'socket.io-client'
 import { Clock, DollarSign, TrendingUp, Eye, Package, Users, Calendar, Crown } from 'lucide-react'
-import './itemDetails.css'
+import { motion, AnimatePresence } from 'framer-motion'
+import '../bid.css';
 
 const socket = io('http://localhost:5000')
 
@@ -180,35 +181,45 @@ const ItemDetails = () => {
 
   const isCriticalTime = timeLeftSeconds < 300 // Less than 5 minutes
 
-  // Handle bid submission
+  // VALIDATION: Handle bid submission with comprehensive validation
   const handleBid = async () => {
+    // VALIDATION: Prevent multiple simultaneous submissions
     if (!item || isSubmittingBid) return
 
     console.log('ItemDetails - Attempting to place bid')
 
-    // Check authentication
+    // VALIDATION: Check user authentication before allowing bid
     if (!userInfo) {
       console.log('ItemDetails - User not authenticated, showing login prompt')
       setShowLoginPrompt(true)
       return
     }
 
-    // Validate bid amount
-    const numericBid = parseFloat(bidAmount)
+    // VALIDATION: Parse and validate bid amount
+    const numericBid = parseFloat(bidAmount);
+    
+    // VALIDATION: Check if bid amount is a valid number and positive
     if (isNaN(numericBid) || numericBid <= 0) {
-      alert('Please enter a valid bid amount')
-      return
+      alert('Please enter a valid bid amount');
+      return;
     }
 
+    // VALIDATION: Check if bid meets minimum increment requirement
     if (numericBid < minAllowed) {
-      alert(`Bid must be at least Rs.${minAllowed}`)
-      return
+      alert(`Bid must be at least Rs.${minAllowed.toLocaleString()}`);
+      return;
     }
 
-    // Check auction status
+    // VALIDATION: Check if bid amount is within reasonable limits (max 1 billion)
+    if (numericBid > 1000000000) {
+      alert('Bid amount is too high. Maximum allowed is Rs.1,000,000,000');
+      return;
+    }
+
+    // VALIDATION: Check auction status and timing
     if (!isAuctionActive) {
-      alert('This auction is no longer accepting bids')
-      return
+      alert('This auction is no longer accepting bids');
+      return;
     }
 
     try {
@@ -242,12 +253,23 @@ const ItemDetails = () => {
     }
   }
 
-  // Handle bid input change
+  // VALIDATION: Handle bid input change with strict numeric validation
+  // Prevents non-numeric characters and ensures proper decimal format
   const handleBidInputChange = (e) => {
-    const value = e.target.value
-    // Allow only numbers and decimal point
+    const value = e.target.value;
+    
+    // VALIDATION: Allow only numbers and decimal point
+    // Regex pattern: ^\d*\.?\d*$ ensures:
+    // - ^\d*: Start with zero or more digits
+    // - \.?: Optional decimal point
+    // - \d*: Zero or more digits after decimal
+    // - $: End of string
+    // This prevents: negative numbers, multiple decimal points, letters, symbols
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      setBidAmount(value)
+      // VALIDATION: Additional check for reasonable bid amount (max 10 digits)
+      if (value.length <= 10) {
+        setBidAmount(value);
+      }
     }
   }
 
@@ -258,12 +280,76 @@ const ItemDetails = () => {
     }
   }
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.6, staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { type: "spring", stiffness: 300, damping: 20 }
+    }
+  };
+
   // Loading state
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.loader}></div>
-        <p style={styles.loadingText}>Loading auction details...</p>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #581c87 0%, #be185d 50%, #312e81 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '2rem',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <motion.div
+          style={{
+            width: '4rem',
+            height: '4rem',
+            border: '4px solid rgba(255, 255, 255, 0.2)',
+            borderTop: '4px solid #fbbf24',
+            borderRadius: '50%',
+            position: 'relative',
+            zIndex: 10
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
+        <motion.p
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            background: 'linear-gradient(90deg, #fbbf24 0%, #ec4899 50%, #9333ea 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            position: 'relative',
+            zIndex: 10
+          }}
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          Loading auction details...
+        </motion.p>
       </div>
     )
   }
@@ -271,11 +357,47 @@ const ItemDetails = () => {
   // Error state
   if (error) {
     return (
-      <div style={styles.errorContainer}>
-        <div style={styles.errorCard}>
-          <h3 style={styles.errorTitle}>Error</h3>
-          <p style={styles.errorText}>{error}</p>
-        </div>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #581c87 0%, #be185d 50%, #312e81 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.25rem',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <motion.div
+          style={{
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '1.5rem',
+            padding: '3rem',
+            textAlign: 'center',
+            maxWidth: '32rem',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            position: 'relative',
+            zIndex: 10
+          }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h3 style={{
+            fontSize: '1.875rem',
+            fontWeight: 'bold',
+            background: 'linear-gradient(90deg, #f87171 0%, #ec4899 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '1.5rem'
+          }}>Error</h3>
+          <p style={{
+            color: 'rgba(255, 255, 255, 0.8)',
+            lineHeight: '1.625',
+            fontSize: '1.125rem'
+          }}>{error}</p>
+        </motion.div>
       </div>
     )
   }
@@ -283,747 +405,551 @@ const ItemDetails = () => {
   // No item found
   if (!item) {
     return (
-      <div style={styles.errorContainer}>
-        <div style={styles.errorCard}>
-          <h3 style={styles.errorTitle}>Item Not Found</h3>
-          <p style={styles.errorText}>The requested item could not be found.</p>
-        </div>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #581c87 0%, #be185d 50%, #312e81 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.25rem',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <motion.div
+          style={{
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '1.5rem',
+            padding: '3rem',
+            textAlign: 'center',
+            maxWidth: '32rem',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            position: 'relative',
+            zIndex: 10
+          }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h3 style={{
+            fontSize: '1.875rem',
+            fontWeight: 'bold',
+            background: 'linear-gradient(90deg, #f87171 0%, #ec4899 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '1.5rem'
+          }}>Item Not Found</h3>
+          <p style={{
+            color: 'rgba(255, 255, 255, 0.8)',
+            lineHeight: '1.625',
+            fontSize: '1.125rem'
+          }}>The requested item could not be found.</p>
+        </motion.div>
       </div>
     )
   }
 
   return (
-    <div style={styles.container}>
+    <motion.div
+      className="animated-bg"
+      style={{ padding: '2rem' }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Login Prompt Modal */}
-      {showLoginPrompt && (
-        <div style={styles.modalOverlay} onClick={() => setShowLoginPrompt(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalIcon}>🔐</div>
-            <h3 style={styles.modalTitle}>Login Required</h3>
-            <p style={styles.modalText}>Please login to place a bid</p>
-            <div style={styles.modalButtons}>
-              <button 
-                style={{...styles.modalButton, background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)'}}
-                onClick={() => window.location.href = '/buyerlogin'}
-              >
-                Login as Buyer
-              </button>
-              <button 
-                style={{...styles.modalButton, background: 'linear-gradient(135deg, #10b981, #059669)'}}
-                onClick={() => window.location.href = '/sellerlogin'}
-              >
-                Login as Seller
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showLoginPrompt && (
+          <motion.div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.8)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 50
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowLoginPrompt(false)}
+          >
+            <motion.div
+              style={{
+                background: 'rgba(30, 41, 59, 0.95)',
+                backdropFilter: 'blur(16px)',
+                borderRadius: '1rem',
+                padding: '2.5rem',
+                textAlign: 'center',
+                maxWidth: '28rem',
+                width: '90%',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}
+              initial={{ opacity: 0, scale: 0.9, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔐</div>
+              <h3 style={{
+                fontSize: '1.5rem',
+                color: '#f87171',
+                marginBottom: '1rem',
+                fontWeight: '600'
+              }}>Login Required</h3>
+              <p style={{
+                color: '#94a3b8',
+                marginBottom: '1.5rem',
+                lineHeight: '1.625'
+              }}>Please login to place a bid</p>
+              <div style={{
+                display: 'flex',
+                gap: '0.75rem',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
+                <motion.button
+                  style={{
+                    background: 'linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.75rem',
+                    padding: '0.75rem 1.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    minWidth: '140px'
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => window.location.href = '/buyerlogin'}
+                >
+                  Login as Buyer
+                </motion.button>
+                <motion.button
+                  style={{
+                    background: 'linear-gradient(90deg, #059669 0%, #047857 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.75rem',
+                    padding: '0.75rem 1.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    minWidth: '140px'
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => window.location.href = '/sellerlogin'}
+                >
+                  Login as Seller
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.headerContent}>
-          <Package size={32} style={styles.headerIcon} />
+      <motion.div
+        variants={itemVariants}
+        style={{ 
+          padding: '2rem',
+          marginBottom: '2rem',
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '1.5rem',
+          boxShadow: '0 20px 25px -12px rgba(0, 0, 0, 0.25)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="header-content">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ 
+              padding: '0.75rem', 
+              background: 'var(--accent-gradient)', 
+              borderRadius: 'var(--radius-xl)',
+              boxShadow: 'var(--shadow-lg)'
+            }}>
+              <Package size={32} style={{ color: 'white' }} />
+            </div>
           <div>
-            <h1 style={styles.title}>Auction Details</h1>
-            <p style={styles.subtitle}>Live auction information and bidding</p>
+              <h1 className="header-title">Auction Details</h1>
+              <p className="header-subtitle">Live auction information and bidding</p>
           </div>
         </div>
-        <div style={styles.headerStats}>
-          <div style={styles.statsCard}>
-            <span style={styles.statsNumber}>{bidHistory.length}</span>
-            <span style={styles.statsLabel}>TOTAL BIDS</span>
-          </div>
-          <div style={styles.statsCard}>
-            <span style={styles.statsNumber}>
+          <div className="stats-grid">
+          <motion.div
+              className="stat-card"
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, y: -2 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+              <span className="stat-number">{bidHistory.length}</span>
+              <span className="stat-label">TOTAL BIDS</span>
+          </motion.div>
+          <motion.div
+              className="stat-card"
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, y: -2 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+              <span className="stat-number">
               {isAuctionActive ? 'LIVE' : 'ENDED'}
             </span>
-            <span style={styles.statsLabel}>STATUS</span>
+              <span className="stat-label">STATUS</span>
+          </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content */}
-      <div style={styles.mainContent}>
+      <div className="enhanced-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', position: 'relative', zIndex: 10 }}>
         {/* Item Image and Basic Info */}
-        <div style={styles.itemSection}>
-          <div style={styles.imageContainer}>
-            <img 
-              src={item.images && item.images.length > 0 ? `http://localhost:5000/uploads/${item.images[0]}` : '/images/default-item.jpg'} 
-          alt={item.name}
-              style={styles.itemImage}
-        />
-            <div style={styles.imageOverlay}>
-              <span style={styles.itemType}>FRESH</span>
+        <motion.div
+          className="glass-container"
+          variants={itemVariants}
+        >
+          <div style={{ position: 'relative', marginBottom: '1.5rem', borderRadius: '0.75rem', overflow: 'hidden' }}>
+            <motion.img
+              src={item.images && item.images.length > 0 ? `http://localhost:5000/uploads/${item.images[0]}` : '/images/default-item.jpg'}
+              alt={item.name}
+              style={{ width: '100%', height: '20rem', objectFit: 'cover', borderRadius: '0.75rem' }}
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+            />
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+              <span className="card-badge" style={{ color: 'var(--text-accent)' }}>
+                FRESH
+              </span>
             </div>
-      </div>
+          </div>
 
-          <div style={styles.itemInfo}>
-            <h2 style={styles.itemName}>{item.name}</h2>
-            <p style={styles.itemDescription}>{item.description}</p>
+          <div style={{ color: 'white' }}>
+            <h2 className="card-title" style={{ fontSize: '2rem', marginBottom: '1rem' }}>{item.name}</h2>
+            <p className="card-description" style={{ marginBottom: '2rem' }}>{item.description}</p>
             
             {/* Price Cards */}
-            <div style={styles.priceCards}>
-              <div style={styles.priceCard}>
-                <div style={styles.priceLabel}>Starting Price</div>
-                <div style={styles.priceValue}>
+            <div className="card-price-section">
+              <div className="price-row">
+                <span className="price-label starting">Starting Price</span>
+                <span className="price-value">
                   Rs.{Number(item.startingPrice).toLocaleString()}
+                </span>
                 </div>
-        </div>
-              <div style={styles.priceCard}>
-                <div style={styles.priceLabel}>Current Price</div>
-                <div style={{...styles.priceValue, color: '#00c2c9'}}>
-            Rs.{Number(item.currentPrice || item.startingPrice).toLocaleString()}
+              <div className="price-row">
+                <span className="price-label current">Current Price</span>
+                <span className="price-current">
+                  Rs.{Number(item.currentPrice || item.startingPrice).toLocaleString()}
+                </span>
                 </div>
-        </div>
-              <div style={styles.priceCard}>
-                <div style={styles.priceLabel}>Quantity</div>
-                <div style={styles.priceValue}>
+              <div className="price-row">
+                <span className="price-label">Quantity</span>
+                <span className="price-value">
                   {item.qty || item.quantity || 1} {item.unit || 'kg'}
+                </span>
                 </div>
-        </div>
-      </div>
+            </div>
 
             {/* Status and Timer */}
-            <div style={styles.statusSection}>
-              <div style={{
-                ...styles.statusBadge,
-                background: isAuctionActive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                borderColor: isAuctionActive ? '#10b981' : '#ef4444',
-                color: isAuctionActive ? '#10b981' : '#ef4444'
-              }}>
-                <div style={{
-                  ...styles.statusDot,
-                  backgroundColor: isAuctionActive ? '#10b981' : '#ef4444'
-                }}></div>
-                {isAuctionActive ? 'LIVE' : 'ENDED'}
-              </div>
-              
-              <div style={{
-                ...styles.timerBadge,
-                background: isCriticalTime ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                borderColor: isCriticalTime ? '#ef4444' : '#f59e0b',
-                color: isCriticalTime ? '#ef4444' : '#f59e0b'
-              }}>
-                <Clock size={16} />
+            <div className="card-timer">
+              <Clock size={18} className="timer-icon" />
+              <span className="timer-label">Ends in:</span>
+              <span className={`timer-value ${isCriticalTime ? 'critical' : ''}`}>
                 {formatTimeLeft}
-              </div>
-      </div>
+              </span>
+            </div>
 
-      {/* Highest Bidder */}
-      {highestBid && (
-              <div style={styles.highestBidder}>
-                <Crown size={20} style={styles.crownIcon} />
-                <div>
-                  <div style={styles.highestBidderLabel}>Highest Bidder</div>
-                  <div style={styles.highestBidderName}>
-          {highestBid.userName} - Rs.{Number(highestBid.bidAmount).toLocaleString()}
+            {/* Highest Bidder */}
+            {highestBid && (
+              <div
+                className="glass-container"
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '1rem', 
+                  padding: '1.5rem',
+                  marginTop: '2rem',
+                  background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%)',
+                  border: '1px solid rgba(251, 191, 36, 0.3)'
+                }}
+              >
+                <div style={{ 
+                  padding: '0.5rem', 
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #f97316 100%)', 
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Crown size={24} style={{ color: 'white' }} />
+                  </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ 
+                    fontSize: '0.875rem', 
+                    color: 'rgba(255, 255, 255, 0.7)', 
+                    marginBottom: '0.5rem', 
+                    fontWeight: '500' 
+                  }}>
+                    Highest Bidder
+                </div>
+                  <div style={{ 
+                    fontSize: '1.125rem', 
+                    fontWeight: 'bold', 
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    {highestBid.userName} - 
+                    <span style={{ 
+                      background: 'linear-gradient(90deg, #fbbf24 0%, #f97316 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text'
+                    }}>
+                      Rs.{Number(highestBid.bidAmount).toLocaleString()}
+                    </span>
                   </div>
                 </div>
-        </div>
-      )}
+              </div>
+            )}
           </div>
-        </div>
+        </motion.div>
 
-      {/* Bid Section */}
-        <div style={styles.bidSection}>
-          <h3 style={styles.bidSectionTitle}>Place Your Bid</h3>
+        {/* Bid Section */}
+        <motion.div
+          className="glass-container"
+          variants={itemVariants}
+          style={{ height: 'fit-content' }}
+        >
+          <h3 className="card-title" style={{ marginBottom: '2rem' }}>Place Your Bid</h3>
           
-      {isAuctionActive ? (
+          {isAuctionActive ? (
             userInfo ? (
               // Check if user is seller and this is their own item
               userInfo.userType === 'seller' && userInfo.userId === item.sellerId ? (
-                <div style={styles.sellerRestriction}>
-                  <h4 style={styles.sellerRestrictionTitle}>🚫 Cannot Bid on Your Own Item</h4>
-                  <p style={styles.sellerRestrictionText}>
+                <motion.div
+                  className="bg-red-500/10 border-2 border-red-500/30 rounded-2xl p-8 text-center backdrop-blur-lg"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <h4 className="text-xl text-red-400 mb-4 font-semibold">🚫 Cannot Bid on Your Own Item</h4>
+                  <p className="text-slate-400 mb-6 leading-relaxed">
                     As a seller, you cannot bid on your own fish lot. Switch to a buyer account to participate in auctions.
                   </p>
-                  <button 
-                    style={styles.switchAccountButton}
+                  <motion.button
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-none rounded-xl px-6 py-3 text-sm font-semibold cursor-pointer transition-all"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => window.location.href = '/buyerlogin'}
                   >
                     Switch to Buyer Account
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
               ) : (
-                <div style={styles.bidForm}>
-                  <div style={styles.bidInputContainer}>
-                    <DollarSign size={20} style={styles.inputIcon} />
-              <input
-                type='text'
-                placeholder={`Minimum bid: Rs.${minAllowed.toLocaleString()}`}
-                value={bidAmount}
-                onChange={handleBidInputChange}
-                onKeyPress={handleKeyPress}
-                disabled={isSubmittingBid}
-                style={styles.bidInput}
-                autoComplete="off"
-              />
+                <motion.div
+                  style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div style={{ position: 'relative' }}>
+                    <DollarSign size={20} style={{ 
+                      position: 'absolute', 
+                      left: '1rem', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      color: '#ec4899' 
+                    }} />
+                    <input
+                      type='text'
+                      placeholder={`Minimum bid: Rs.${minAllowed.toLocaleString()}`}
+                      value={bidAmount}
+                      onChange={handleBidInputChange}
+                      onKeyPress={handleKeyPress}
+                      disabled={isSubmittingBid}
+                      style={{ 
+                        width: '100%', 
+                        paddingLeft: '3rem', 
+                        paddingRight: '1rem', 
+                        paddingTop: '1.25rem', 
+                        paddingBottom: '1.25rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(236, 72, 153, 0.3)',
+                        borderRadius: '1rem',
+                        color: 'white',
+                        fontSize: '1.125rem',
+                        fontWeight: '500',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      className='search-input'
+                      autoComplete="off"
+                    />
                   </div>
                   {bidAmount && parseFloat(bidAmount) < minAllowed && (
-                    <div style={styles.bidValidationMessage}>
+                    <motion.div
+                      className="text-sm text-red-400 mt-2 text-center font-medium bg-red-500/10 p-3 rounded-xl border border-red-400/30"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
                       Bid must be at least Rs.{minAllowed.toLocaleString()}
-                    </div>
+                    </motion.div>
                   )}
-              <button
-                onClick={handleBid}
-                disabled={isSubmittingBid || !bidAmount || timeLeftSeconds <= 0 || parseFloat(bidAmount) < minAllowed}
-                    style={styles.bidButton}
-              >
-                {isSubmittingBid ? 'Placing Bid...' : 
-                 timeLeftSeconds <= 0 ? 'Auction Ended' :
-                 !bidAmount ? 'Enter Bid Amount' :
-                 parseFloat(bidAmount) < minAllowed ? `Minimum Rs.${minAllowed.toLocaleString()}` :
-                 'Place Bid'}
-              </button>
-            </div>
+                  <motion.button
+                    onClick={handleBid}
+                    disabled={isSubmittingBid || !bidAmount || timeLeftSeconds <= 0 || parseFloat(bidAmount) < minAllowed}
+                    className='enhanced-button'
+                    style={{ 
+                      padding: '1.25rem 2rem',
+                      fontSize: '1.125rem',
+                      fontWeight: 'bold',
+                      background: 'linear-gradient(90deg, #fbbf24 0%, #ec4899 50%, #9333ea 100%)',
+                      border: 'none',
+                      borderRadius: '1rem',
+                      color: 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      width: '100%'
+                    }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {isSubmittingBid ? 'Placing Bid...' : 
+                     timeLeftSeconds <= 0 ? 'Auction Ended' :
+                     !bidAmount ? 'Enter Bid Amount' :
+                     parseFloat(bidAmount) < minAllowed ? `Minimum Rs.${minAllowed.toLocaleString()}` :
+                     'Place Bid'}
+                  </motion.button>
+                </motion.div>
               )
             ) : (
-              <button 
-                style={styles.loginButton}
+              <motion.button
+                className="w-full py-5 px-8 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-none rounded-2xl text-lg font-bold cursor-pointer transition-all shadow-2xl"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowLoginPrompt(true)}
               >
                 Login to Place Bid
-              </button>
+              </motion.button>
             )
           ) : (
-            <div style={styles.auctionEnded}>
-              <h4 style={styles.auctionEndedTitle}>🚫 Auction Ended</h4>
-              <p style={styles.auctionEndedText}>This auction is no longer accepting bids</p>
-        </div>
-      )}
-        </div>
+            <motion.div
+              className="text-center p-8 bg-gradient-to-r from-red-500/20 to-pink-500/20 rounded-2xl border border-red-400/30 shadow-lg backdrop-blur-sm"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h4 className="text-xl font-bold text-red-400 mb-3">🚫 Auction Ended</h4>
+              <p className="text-white/80">This auction is no longer accepting bids</p>
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
 
       {/* Bid History */}
-        <div style={styles.historySection}>
-          <h3 style={styles.historyTitle}>
-            <TrendingUp size={20} style={{ marginRight: '8px' }} />
-            Bid History
-          </h3>
-          
+      <motion.div
+        className="glass-container"
+        variants={itemVariants}
+        style={{ marginTop: '2rem', position: 'relative', zIndex: 10 }}
+      >
+        <h3 className="card-title" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center' }}>
+          <TrendingUp size={24} style={{ marginRight: '0.75rem' }} />
+          Bid History
+        </h3>
+        
         {bidHistory.length === 0 ? (
-            <div style={styles.noBids}>
-              <Users size={48} style={styles.noBidsIcon} />
-              <p style={styles.noBidsText}>No bids placed yet. Be the first to bid!</p>
+          <div className='empty-container'>
+            <div
+              style={{ 
+                padding: '1.5rem',
+                background: 'linear-gradient(135deg, #ec4899 0%, #9333ea 100%)',
+                borderRadius: '50%',
+                marginBottom: '1.5rem',
+                boxShadow: 'var(--shadow-xl)',
+                margin: '0 auto 1.5rem auto',
+                width: 'fit-content'
+              }}
+            >
+              <Users size={48} style={{ color: 'white' }} />
+            </div>
+            <p style={{ fontSize: '1.125rem', fontWeight: '500', color: 'rgba(255, 255, 255, 0.8)' }}>No bids placed yet. Be the first to bid!</p>
           </div>
         ) : (
-            <div style={styles.bidHistoryList}>
+          <div style={{ maxHeight: '24rem', overflowY: 'auto' }}>
             {bidHistory.map((bid, index) => (
-                <div key={`${bid.itemId}-${bid.userName}-${bid.createdAt}-${index}`} style={styles.bidItem}>
-                  <div style={styles.bidItemInfo}>
-                    <div style={styles.bidderInfo}>
-                      <div style={styles.bidderName}>
-                    {bid.userName}
-                        {index === 0 && <Crown size={16} style={styles.crownIcon} />}
+              <div
+                key={`${bid.itemId}-${bid.userName}-${bid.createdAt}-${index}`}
+                className='enhanced-card'
+                style={{ 
+                  marginBottom: '1rem',
+                  borderLeft: index === 0 ? '4px solid #fbbf24' : '1px solid rgba(255, 255, 255, 0.2)',
+                  background: index === 0 ? 'linear-gradient(90deg, rgba(251, 191, 36, 0.2) 0%, rgba(249, 115, 22, 0.2) 100%)' : 'rgba(255, 255, 255, 0.1)',
+                  padding: '1.5rem'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ 
+                        fontSize: '1.125rem', 
+                        fontWeight: 'bold', 
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        {bid.userName}
+                        {index === 0 && (
+                          <Crown size={20} style={{ color: '#fbbf24' }} />
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.875rem', 
+                      color: 'rgba(255, 255, 255, 0.7)', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem' 
+                    }}>
+                      <Calendar size={16} />
+                      {new Date(bid.createdAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
                   </div>
-                      <div style={styles.bidTime}>
-                        <Calendar size={14} />
-                    {new Date(bid.createdAt).toLocaleString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                          minute: '2-digit'
-                    })}
+                  <div style={{ 
+                    fontSize: '1.25rem', 
+                    fontWeight: 'bold', 
+                    background: 'linear-gradient(90deg, #fbbf24 0%, #f97316 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    marginLeft: '1rem'
+                  }}>
+                    Rs.{Number(bid.bidAmount).toLocaleString()}
                   </div>
                 </div>
-                    <div style={styles.bidAmount}>
-                  Rs.{Number(bid.bidAmount).toLocaleString()}
-                </div>
+              </div>
+            ))}
           </div>
-        </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+        )}
+      </motion.div>
+    </motion.div>
   )
 }
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-    padding: '20px',
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '400px',
-    gap: '20px',
-  },
-  loader: {
-    width: '50px',
-    height: '50px',
-    border: '4px solid #374151',
-    borderTop: '4px solid #00c2c9',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-  },
-  loadingText: {
-    fontSize: '18px',
-    color: '#9ca3af',
-    margin: 0,
-  },
-  errorContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '400px',
-    padding: '20px',
-  },
-  errorCard: {
-    background: 'rgba(15, 23, 42, 0.9)',
-    borderRadius: '16px',
-    padding: '40px',
-    textAlign: 'center',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    maxWidth: '400px',
-  },
-  errorTitle: {
-    fontSize: '24px',
-    color: '#ef4444',
-    margin: '0 0 15px 0',
-    fontWeight: '600',
-  },
-  errorText: {
-    fontSize: '16px',
-    color: '#9ca3af',
-    margin: 0,
-    lineHeight: '1.5',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '30px',
-    padding: '30px',
-    background: 'rgba(15, 23, 42, 0.8)',
-    borderRadius: '16px',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  headerContent: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '20px',
-  },
-  headerIcon: {
-    color: '#00c2c9',
-  },
-  title: {
-    fontSize: '32px',
-    fontWeight: '700',
-    color: '#ffffff',
-    margin: 0,
-  },
-  subtitle: {
-    fontSize: '16px',
-    color: '#9ca3af',
-    margin: '5px 0 0 0',
-  },
-  headerStats: {
-    display: 'flex',
-    gap: '16px',
-  },
-  statsCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '20px',
-    background: 'rgba(0, 194, 201, 0.1)',
-    borderRadius: '12px',
-    color: 'white',
-    minWidth: '100px',
-    border: '1px solid rgba(0, 194, 201, 0.2)',
-  },
-  statsNumber: {
-    fontSize: '20px',
-    fontWeight: '800',
-    color: '#00c2c9',
-  },
-  statsLabel: {
-    fontSize: '12px',
-    opacity: 0.9,
-    marginTop: '5px',
-    fontWeight: '600',
-  },
-  mainContent: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '30px',
-  },
-  itemSection: {
-    background: 'rgba(15, 23, 42, 0.8)',
-    borderRadius: '16px',
-    padding: '30px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  imageContainer: {
-    position: 'relative',
-    marginBottom: '24px',
-    borderRadius: '12px',
-    overflow: 'hidden',
-  },
-  itemImage: {
-    width: '100%',
-    height: '300px',
-    objectFit: 'cover',
-    borderRadius: '12px',
-  },
-  imageOverlay: {
-    position: 'absolute',
-    top: '16px',
-    right: '16px',
-  },
-  itemType: {
-    background: 'rgba(0, 194, 201, 0.3)',
-    color: '#00c2c9',
-    padding: '6px 12px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '700',
-    border: '1px solid rgba(0, 194, 201, 0.5)',
-  },
-  itemInfo: {
-    color: '#ffffff',
-  },
-  itemName: {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: '#ffffff',
-    margin: '0 0 12px 0',
-  },
-  itemDescription: {
-    fontSize: '16px',
-    color: '#9ca3af',
-    lineHeight: '1.6',
-    margin: '0 0 24px 0',
-  },
-  priceCards: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
-    gap: '16px',
-    marginBottom: '24px',
-  },
-  priceCard: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    padding: '20px',
-    borderRadius: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  priceLabel: {
-    fontSize: '14px',
-    color: '#9ca3af',
-    marginBottom: '8px',
-    fontWeight: '500',
-  },
-  priceValue: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  statusSection: {
-    display: 'flex',
-    gap: '12px',
-    marginBottom: '24px',
-  },
-  statusBadge: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 16px',
-    borderRadius: '20px',
-    fontSize: '14px',
-    fontWeight: '600',
-    border: '1px solid',
-  },
-  statusDot: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-  },
-  timerBadge: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 16px',
-    borderRadius: '20px',
-    fontSize: '14px',
-    fontWeight: '600',
-    border: '1px solid',
-  },
-  highestBidder: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '16px',
-    background: 'rgba(245, 158, 11, 0.1)',
-    borderRadius: '12px',
-    border: '1px solid rgba(245, 158, 11, 0.2)',
-  },
-  crownIcon: {
-    color: '#f59e0b',
-  },
-  highestBidderLabel: {
-    fontSize: '14px',
-    color: '#9ca3af',
-    marginBottom: '4px',
-  },
-  highestBidderName: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  bidSection: {
-    background: 'rgba(15, 23, 42, 0.8)',
-    borderRadius: '16px',
-    padding: '30px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    height: 'fit-content',
-  },
-  bidSectionTitle: {
-    fontSize: '20px',
-    fontWeight: '600',
-    color: '#ffffff',
-    margin: '0 0 24px 0',
-  },
-  bidForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  bidInputContainer: {
-    position: 'relative',
-  },
-  inputIcon: {
-    position: 'absolute',
-    left: '16px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    color: '#9ca3af',
-  },
-  bidInput: {
-    width: '100%',
-    padding: '16px 16px 16px 48px',
-    background: 'rgba(255, 255, 255, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '12px',
-    color: '#ffffff',
-    fontSize: '16px',
-    fontWeight: '500',
-    outline: 'none',
-    transition: 'all 0.3s ease',
-  },
-  bidValidationMessage: {
-    fontSize: '12px',
-    color: '#ef4444',
-    marginTop: '8px',
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  bidButton: {
-    padding: '16px 24px',
-    background: 'linear-gradient(135deg, #00c2c9, #156eae)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-  },
-  loginButton: {
-    width: '100%',
-    padding: '16px 24px',
-    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-  },
-  auctionEnded: {
-    textAlign: 'center',
-    padding: '24px',
-    background: 'rgba(239, 68, 68, 0.1)',
-    borderRadius: '12px',
-    border: '1px solid rgba(239, 68, 68, 0.2)',
-  },
-  auctionEndedTitle: {
-    fontSize: '18px',
-    color: '#ef4444',
-    margin: '0 0 8px 0',
-    fontWeight: '600',
-  },
-  auctionEndedText: {
-    fontSize: '14px',
-    color: '#9ca3af',
-    margin: 0,
-  },
-  historySection: {
-    gridColumn: '1 / -1',
-    background: 'rgba(15, 23, 42, 0.8)',
-    borderRadius: '16px',
-    padding: '30px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    marginTop: '20px',
-  },
-  historyTitle: {
-    fontSize: '20px',
-    fontWeight: '600',
-    color: '#ffffff',
-    margin: '0 0 24px 0',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  noBids: {
-    textAlign: 'center',
-    padding: '40px',
-    color: '#9ca3af',
-  },
-  noBidsIcon: {
-    marginBottom: '16px',
-    opacity: 0.5,
-  },
-  noBidsText: {
-    fontSize: '16px',
-    margin: 0,
-  },
-  bidHistoryList: {
-    maxHeight: '400px',
-    overflowY: 'auto',
-  },
-  bidItem: {
-    padding: '16px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: '12px',
-    marginBottom: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  bidItemInfo: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  bidderInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  bidderName: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#ffffff',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  bidTime: {
-    fontSize: '12px',
-    color: '#9ca3af',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-  },
-  bidAmount: {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#00c2c9',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0, 0, 0, 0.8)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    backdropFilter: 'blur(5px)',
-  },
-  modal: {
-    background: 'rgba(15, 23, 42, 0.95)',
-    borderRadius: '16px',
-    padding: '40px',
-    textAlign: 'center',
-    maxWidth: '400px',
-    width: '90%',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(10px)',
-  },
-  modalIcon: {
-    fontSize: '48px',
-    marginBottom: '16px',
-  },
-  modalTitle: {
-    fontSize: '24px',
-    color: '#ef4444',
-    margin: '0 0 15px 0',
-    fontWeight: '600',
-  },
-  modalText: {
-    fontSize: '16px',
-    color: '#9ca3af',
-    margin: '0 0 25px 0',
-    lineHeight: '1.5',
-  },
-  modalButtons: {
-    display: 'flex',
-    gap: '12px',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-  },
-  modalButton: {
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    padding: '12px 24px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    minWidth: '140px',
-  },
-  sellerRestriction: {
-    background: 'rgba(239, 68, 68, 0.1)',
-    border: '2px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '16px',
-    padding: '30px',
-    textAlign: 'center',
-    backdropFilter: 'blur(10px)',
-  },
-  sellerRestrictionTitle: {
-    fontSize: '20px',
-    color: '#ef4444',
-    margin: '0 0 15px 0',
-    fontWeight: '600',
-  },
-  sellerRestrictionText: {
-    fontSize: '16px',
-    color: '#9ca3af',
-    margin: '0 0 25px 0',
-    lineHeight: '1.5',
-  },
-  switchAccountButton: {
-    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    padding: '12px 24px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-  },
-};
 
 export default ItemDetails

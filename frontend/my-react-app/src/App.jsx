@@ -14,8 +14,8 @@ import SellerDashboard from './Components/dashBoards/SellerDashboard'
 import AdminDashboard from './Components/dashBoards/AdminDashboard'
 import AddFishLot from './Components/fishLot/AddFishLot'
 import InventoryList from './Components/inventory/InventoryList'
-import ProductGrid from './Components/inventory/ProductGrid'
-import SellerInventory from './Components/seller/SellerInventory'
+
+
 import Shop from './Components/shop/Shop'
 import Orders from './Components/orders/Orders'
 
@@ -36,8 +36,8 @@ const App = () => {
         <Route path="/admin" element={<AdminDashboard/>}/>
         <Route path="/add-fish-lot" element={<AddFishLot/>}/>
         <Route path="/inventory" element={<InventoryList/>}/>
-        <Route path="/products" element={<ProductGrid/>}/>
-        <Route path="/seller-inventory" element={<SellerInventory/>}/>
+        
+        
         <Route path="/shop" element={<Shop/>}/>
         <Route path="/orders" element={<Orders/>}/>
       </Routes>

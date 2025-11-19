@@ -466,3 +466,220 @@
         max-width: 150px;
     }
 }
+
+/* Receipt Scanning Styles */
+.receipt-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    background: #f9f9f9;
+}
+
+.receipt-upload-area {
+    text-align: center;
+}
+
+.receipt-input {
+    margin: 10px 0;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+.receipt-input:hover {
+    border-color: #999;
+}
+
+.receipt-preview {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.receipt-preview img {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    height: auto;
+}
+
+.scan-result {
+    margin-top: 10px;
+    padding: 10px;
+    background: #e8f5e8;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.scan-result p {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    color: #059669;
+}
+
+.scan-result ul {
+    margin: 5px 0;
+    padding-left: 20px;
+}
+
+.scan-result li {
+    margin: 2px 0;
+    color: #374151;
+}
+
+/* Receipt Image Display Styles */
+.receipt-image-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.receipt-image-btn:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.no-image {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Image Modal Styles */
+.image-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.image-modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.image-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.image-modal-header h3 {
+    margin: 0;
+    color: #111827;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.image-modal-close {
+    background: #ef4444;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.image-modal-close:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.image-modal-body {
+    padding: 20px;
+    text-align: center;
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.receipt-image-display {
+    max-width: 100%;
+    max-height: 60vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+}
+
+.image-filename {
+    margin: 15px 0 0 0;
+    color: #6b7280;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .image-modal {
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+
+    .image-modal-header {
+        padding: 15px;
+    }
+
+    .image-modal-body {
+        padding: 15px;
+    }
+
+    .receipt-image-display {
+        max-height: 50vh;
+    }
+}
+
+/* Salary Modal Styles */
+.btn-disabled {
+    background: #9ca3af !important;
+    color: #6b7280 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+.btn-disabled:hover {
+    background: #9ca3af !important;
+    transform: none !important;
+    box-shadow: none !important;
+}

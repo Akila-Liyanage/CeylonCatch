@@ -288,7 +288,7 @@ const Shop = () => {
                         </div>
 
                         <div className="product-info">
-                            <h3 className="product-name">{item.name}</h3>
+                            <h3 className="product-na">{item.name}</h3>
                             <p className="product-description">{item.description}</p>
 
                             <div className="product-meta">
@@ -310,7 +310,7 @@ const Shop = () => {
                                     >
                                         Pay
                                     </button>
-                                    <button className="view-btn">View Details</button>
+                                    <button className="view-bt">View Details</button>
                                 </div>
                             </div>
                         </div>

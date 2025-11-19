@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from 'axios';//HTTP client for API calls.
 import { jsPDF } from 'jspdf';
 import logoUrl from '../../assets/images/logo.png';
+import { scanReceipt } from '../../services/ocrService';
 import './admin-users.css';
 
 const numberOrZero = (v) => {//return 0 for invalid or nan
@@ -9,13 +10,13 @@ const numberOrZero = (v) => {//return 0 for invalid or nan
     return Number.isFinite(n) ? n : 0;
 };
 
-const apiBase = (typeof window !== 'undefined' && (import.meta?.env?.VITE_API_BASE || `http://${window.location.hostname}:5000`)) || '';
+const apiBase = (typeof window !== 'undefined' && (import.meta?.env?.VITE_API_BASE || `http://${window.location.hostname}:5000`)) || '';//ensure runs in browser && read Vite variable if set|fall back to empty string|not in browser , fall to empty string
 
 // Auto-generate ID function
 const generateId = (type) => {
     const now = new Date();
-    const timestamp = now.getTime().toString().slice(-6);
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const timestamp = now.getTime().toString().slice(-6);//time in miliseconds since 1970.1.1,,first 6 remove
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');//pad - leadingzero
     return `${type}-${timestamp}${random}`;
 };
 
@@ -61,6 +62,14 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
     const [loadingReport, setLoadingReport] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
 
+    // Receipt scanning state
+    const [receiptPhoto, setReceiptPhoto] = useState(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const [scanResult, setScanResult] = useState(null);
+    const [receiptImageData, setReceiptImageData] = useState(null);
+    const [receiptImageName, setReceiptImageName] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
+
     // Categories for dropdowns
     const expenseCategories = [
         'Tools', 'Transport', 'Ice', 'Utilities', 'Rent', 'Miscellaneous'
@@ -74,6 +83,80 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
         'Cash', 'Bank Transfer', 'Card', 'Mobile Payment', 'Cheque', 'Other'
     ];
 
+    // Date validation function - can only add income/expense from March 1st this year to today
+    const getThisYearMarch1st = () => {
+        const currentYear = new Date().getFullYear();
+        return new Date(currentYear, 3, 2);
+    };
+
+    const getToday = () => {
+        return new Date();
+    };
+
+    const getMaxAllowedDateString = () => {
+        return getToday().toISOString().split('T')[0];
+    };
+
+    const getMinAllowedDateString = () => {
+        return getThisYearMarch1st().toISOString().split('T')[0];
+    };
+
+    const isDateValid = (dateString) => {
+        if (!dateString) return false;
+        const selectedDate = new Date(dateString);
+        const maxAllowedDate = getToday();
+        const minAllowedDate = getThisYearMarch1st();
+        // Ensure the date is between March 1st this year and today
+        return selectedDate >= minAllowedDate && selectedDate <= maxAllowedDate;
+    };
+
+    // Convert file to base64
+    const convertToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    };
+
+    // Receipt scanning function
+    const handleReceiptScan = async (file) => {
+        if (!file) return;
+
+        setReceiptPhoto(file);
+        setIsScanning(true);
+        setScanResult(null);
+
+        try {
+            // Convert image to base64 for storage
+            const base64Data = await convertToBase64(file);
+            setReceiptImageData(base64Data);
+            setReceiptImageName(file.name);
+
+            // Scan the image for data extraction
+            const extractedData = await scanReceipt(file);
+            setScanResult(extractedData);
+
+            // Auto-fill the form with extracted data
+            if (extractedData.amount) {
+                setExpense(prev => ({
+                    ...prev,
+                    amount: extractedData.amount.toString(),
+                    description: extractedData.description || prev.description,
+                    category: extractedData.category || prev.category,
+                    date: extractedData.date || prev.date,
+                    receiptNumber: extractedData.invoiceNumber || prev.receiptNumber
+                }));
+            }
+        } catch (error) {
+            console.error('Scanning failed:', error);
+            setMessage('Failed to scan receipt. Please enter data manually.');
+        } finally {
+            setIsScanning(false);
+        }
+    };
+
     // Simple validation
     const validateForm = (formData, type) => {
         const errors = {};
@@ -81,9 +164,15 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
         if (!formData.category) errors.category = 'Category is required';
         if (!formData.description || formData.description.trim() === '') errors.description = 'Description is required';
         if (!formData.amount || formData.amount === '') errors.amount = 'Amount is required';
-        else if (Number(formData.amount) <= 0) errors.amount = 'Amount must be greater than 0';
+        else if (Number(formData.amount) < 0) errors.amount = 'Amount cannot be negative';
+        else if (Number(formData.amount) === 0) errors.amount = 'Amount must be greater than 0';
         if (!formData.paymentMethod) errors.paymentMethod = 'Payment method is required';
         if (!formData.date) errors.date = 'Date is required';
+        else if (!isDateValid(formData.date)) {
+            const currentYear = new Date().getFullYear();
+            const today = new Date().toLocaleDateString();
+            errors.date = `Date must be between March 1st, ${currentYear} and ${today}`;
+        }
 
         return errors;
     };
@@ -153,6 +242,21 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
         setErrors({ income: {}, expense: {} });
         setEditingEntry(null);
         setIsEditing(false);
+        setReceiptPhoto(null);
+        setScanResult(null);
+        setIsScanning(false);
+        setReceiptImageData(null);
+        setReceiptImageName(null);
+    };
+
+    // Function to display image in modal
+    const showImageModal = (imageData, imageName) => {
+        setSelectedImage({ data: imageData, name: imageName });
+    };
+
+    // Function to close image modal
+    const closeImageModal = () => {
+        setSelectedImage(null);
     };
 
     const openReportModal = () => {
@@ -236,7 +340,9 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
             const data = {
                 ...formData,
                 amount: numberOrZero(formData.amount),
-                entryType
+                entryType,
+                receiptImageData: receiptImageData || null,
+                receiptImageName: receiptImageName || null
             };
 
             // Save or update
@@ -560,7 +666,10 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                                     step="0.01"
                                     value={income.amount}
                                     onChange={e => setIncome(prev => ({ ...prev, amount: e.target.value }))}
-                                    placeholder="0.00"
+                                    onInput={e => {
+                                        if (e.target.value <= 0) e.target.value = 1;
+                                    }}
+                                    placeholder="Eg:1000.00"
                                     className={`finance-form-input ${errors.income.amount ? 'error' : ''}`}
                                 />
                                 {errors.income.amount && <div className="error-text">{errors.income.amount}</div>}
@@ -612,6 +721,8 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                                 type="date"
                                 value={income.date}
                                 onChange={e => setIncome(prev => ({ ...prev, date: e.target.value }))}
+                                min={getMinAllowedDateString()}
+                                max={getMaxAllowedDateString()}
                                 className={`finance-form-input ${errors.income.date ? 'error' : ''}`}
                             />
                             {errors.income.date && <div className="error-text">{errors.income.date}</div>}
@@ -656,6 +767,40 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                         </div>
                     </div>
                     <div className="form-body">
+                        {/* Receipt Photo Section */}
+                        <div className="receipt-section">
+                            <label className="finance-form-label">Receipt Photo (Optional)</label>
+                            <div className="receipt-upload-area">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => handleReceiptScan(e.target.files[0])}
+                                    className="receipt-input"
+                                />
+                                {receiptPhoto && (
+                                    <div className="receipt-preview">
+                                        <img
+                                            src={URL.createObjectURL(receiptPhoto)}
+                                            alt="Receipt"
+                                            style={{ width: '200px', height: 'auto', marginTop: '10px' }}
+                                        />
+                                        {isScanning && <p>Scanning receipt...</p>}
+                                        {scanResult && (
+                                            <div className="scan-result">
+                                                <p>Scanned data found:</p>
+                                                <ul>
+                                                    {scanResult.amount && <li>Amount: {scanResult.amount}</li>}
+                                                    {scanResult.date && <li>Date: {scanResult.date}</li>}
+                                                    {scanResult.invoiceNumber && <li>Invoice Number: {scanResult.invoiceNumber}</li>}
+                                                    {scanResult.category && <li>Category: {scanResult.category}</li>}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                         <div className="finance-form-grid">
                             <div className="finance-form-field">
                                 <label className="finance-form-label">Type/Category *</label>
@@ -679,7 +824,10 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                                     step="0.01"
                                     value={expense.amount}
                                     onChange={e => setExpense(prev => ({ ...prev, amount: e.target.value }))}
-                                    placeholder="0.00"
+                                    onInput={e => {
+                                        if (e.target.value <= 0) e.target.value = 1;
+                                    }}
+                                    placeholder="Eg:1000.00"
                                     className={`finance-form-input ${errors.expense.amount ? 'error' : ''}`}
                                 />
                                 {errors.expense.amount && <div className="error-text">{errors.expense.amount}</div>}
@@ -731,6 +879,8 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                                 type="date"
                                 value={expense.date}
                                 onChange={e => setExpense(prev => ({ ...prev, date: e.target.value }))}
+                                min={getMinAllowedDateString()}
+                                max={getMaxAllowedDateString()}
                                 className={`finance-form-input ${errors.expense.date ? 'error' : ''}`}
                             />
                             {errors.expense.date && <div className="error-text">{errors.expense.date}</div>}
@@ -803,6 +953,7 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                                     <th>Amount (LKR)</th>
                                     <th>Payment Method</th>
                                     <th>Receipt #</th>
+                                    <th>Receipt Image</th>
                                     <th>Date</th>
                                     <th>Actions</th>
                                 </tr>
@@ -835,6 +986,19 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                                             </td>
                                             <td>{entry.paymentMethod || 'N/A'}</td>
                                             <td>{entry.receiptNumber || 'N/A'}</td>
+                                            <td>
+                                                {entry.receiptImageData ? (
+                                                    <button
+                                                        className="receipt-image-btn"
+                                                        onClick={() => showImageModal(entry.receiptImageData, entry.receiptImageName)}
+                                                        title="View Receipt Image"
+                                                    >
+                                                        📷 View
+                                                    </button>
+                                                ) : (
+                                                    <span className="no-image">No Image</span>
+                                                )}
+                                            </td>
                                             <td>{displayDate}</td>
                                             <td className="finance-actions">
                                                 <button className="finance-action-btn finance-action-edit" onClick={() => editEntry(entry)} title="Edit">✏️</button>
@@ -874,29 +1038,29 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                             <h2 className="modal-title">Monthly Profit & Loss Report</h2>
                             <button className="modal-close" onClick={closeReportModal}>✕</button>
                         </div>
-                        
+
                         <div className="modal-body">
                             <div className="report-form-section">
                                 <div className="form-group">
                                     <label className="form-label">Select Month & Year</label>
-                                    <input 
-                                        type="month" 
-                                        value={reportMonth} 
+                                    <input
+                                        type="month"
+                                        value={reportMonth}
                                         onChange={e => setReportMonth(e.target.value)}
                                         className="form-input"
                                     />
                                 </div>
-                                
+
                                 <div className="form-actions">
-                                    <button 
-                                        className="btn btn-secondary" 
+                                    <button
+                                        className="btn btn-secondary"
                                         onClick={closeReportModal}
                                     >
                                         Cancel
                                     </button>
-                                    <button 
-                                        className="btn btn-primary" 
-                                        disabled={!reportMonth || loadingReport} 
+                                    <button
+                                        className="btn btn-primary"
+                                        disabled={!reportMonth || loadingReport}
                                         onClick={loadReport}
                                     >
                                         {loadingReport ? 'Generating...' : 'Generate Report'}
@@ -934,7 +1098,7 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                                                 <div className="summary-value expense total">Rs. {(report.totals.marketExpense + report.totals.salaryPayouts)?.toLocaleString() || '0'}</div>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="net-result">
                                             <div className="net-label">Net {((report.totals.marketIncome + report.totals.shopSalesIncome) - (report.totals.marketExpense + report.totals.salaryPayouts)) >= 0 ? 'Profit' : 'Loss'}</div>
                                             <div className={`net-value ${((report.totals.marketIncome + report.totals.shopSalesIncome) - (report.totals.marketExpense + report.totals.salaryPayouts)) >= 0 ? 'profit' : 'loss'}`}>
@@ -942,15 +1106,15 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="report-actions">
-                                        <button 
+                                        <button
                                             className="btn btn-success"
                                             onClick={generateProfitLossPDF}
                                         >
                                             📄 Generate PDF Report
                                         </button>
-                                        <button 
+                                        <button
                                             className="btn btn-secondary"
                                             onClick={closeReportModal}
                                         >
@@ -958,6 +1122,28 @@ const Market = ({ searchTerm = '', filterType = 'all' }) => {
                                         </button>
                                     </div>
                                 </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Image Modal */}
+            {selectedImage && (
+                <div className="image-modal-overlay" onClick={closeImageModal}>
+                    <div className="image-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="image-modal-header">
+                            <h3>Receipt Image</h3>
+                            <button className="image-modal-close" onClick={closeImageModal}>✕</button>
+                        </div>
+                        <div className="image-modal-body">
+                            <img
+                                src={selectedImage.data}
+                                alt={selectedImage.name || 'Receipt'}
+                                className="receipt-image-display"
+                            />
+                            {selectedImage.name && (
+                                <p className="image-filename">{selectedImage.name}</p>
                             )}
                         </div>
                     </div>

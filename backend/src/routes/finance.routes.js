@@ -5,7 +5,7 @@ import { generateInvoice, getInvoices, getAllInvoices } from '../controllers/fin
 import { generateReport, getReports } from '../controllers/finance.controller/report.controller.js';
 import { paySalary, getSalaries } from '../controllers/finance.controller/salary.controller.js';
 import { calculateSalarySlip } from '../controllers/finance.controller/payroll.controller.js';
-import { createMarketEntry, listMarketEntries, getMonthlyMarketReport } from '../controllers/finance.controller/market.controller.js';
+import { createMarketEntry, listMarketEntries, getMonthlyMarketReport, updateMarketEntry, deleteMarketEntry } from '../controllers/finance.controller/market.controller.js';
 
 const router = express.Router();
 
@@ -39,5 +39,7 @@ router.post('/payroll/calculate-slip', calculateSalarySlip);
 router.post('/market', createMarketEntry);
 router.get('/market', listMarketEntries);
 router.get('/market/monthly-report', getMonthlyMarketReport);
+router.put('/market/:id', updateMarketEntry);
+router.delete('/market/:id', deleteMarketEntry);
 
 export default router;

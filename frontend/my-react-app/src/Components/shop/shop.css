@@ -170,16 +170,20 @@
 }
 
 .bid-btn,
-.view-btn {
+.view-bt {
     flex: 1;
     padding: 12px 20px;
     border: none;
     border-radius: 25px;
+    
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.9rem;
 }
+
+
+
 
 .bid-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -191,7 +195,7 @@
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-.view-btn {
+.view-bt {
     background: transparent;
     color: #667eea;
     border: 2px solid #667eea;
@@ -509,6 +513,14 @@
   }
   
   .product-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #1a202c;
+    line-height: 1.2;
+  }
+
+  .product-na {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0 0 0.5rem 0;

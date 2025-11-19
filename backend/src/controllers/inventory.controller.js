@@ -1,6 +1,6 @@
 import Inventory from '../models/Inventory.model.js';
 
-// ✅ Add item
+//Add item
 export const addStock = async (req, res) => {
   try {
     const item = new Inventory(req.body);
@@ -11,7 +11,7 @@ export const addStock = async (req, res) => {
   }
 };
 
-// ✅ Update stock
+//Update stock
 export const updateStock = async (req, res) => {
   try {
     const updatedItem = await Inventory.findByIdAndUpdate(
@@ -26,7 +26,7 @@ export const updateStock = async (req, res) => {
   }
 };
 
-// ✅ Delete stock
+//Delete stock
 export const deleteStock = async (req, res) => {
   try {
     const deletedItem = await Inventory.findByIdAndDelete(req.params.id);
@@ -37,7 +37,7 @@ export const deleteStock = async (req, res) => {
   }
 };
 
-// ✅ Get all inventory items
+//Get all inventory items
 export const getAllInventory = async (req, res) => {
   try {
     const items = await Inventory.find();
@@ -47,7 +47,7 @@ export const getAllInventory = async (req, res) => {
   }
 };
 
-// ✅ Get single stock item
+//Get single stock item
 export const getStock = async (req, res) => {
   try {
     const item = await Inventory.findById(req.params.id);
@@ -58,7 +58,7 @@ export const getStock = async (req, res) => {
   }
 };
 
-// ✅ Add quantity to existing stock
+//Add quantity to existing stock
 export const addQuantity = async (req, res) => {
   try {
     const item = await Inventory.findById(req.params.id);
@@ -76,7 +76,7 @@ export const addQuantity = async (req, res) => {
   }
 };
 
-// ✅ Check low stock items
+//Check low stock items
 export const checkLowStock = async (req, res) => {
   try {
     const lowStockItems = await Inventory.find({
@@ -89,7 +89,7 @@ export const checkLowStock = async (req, res) => {
   }
 };
 
-// ✅ Get inventory items by seller email
+//Get inventory items by seller email
 export const getInventoryBySeller = async (req, res) => {
   try {
     const { sellerEmail } = req.params;
@@ -101,7 +101,7 @@ export const getInventoryBySeller = async (req, res) => {
   }
 };
 
-// ✅ Reduce quantity after purchase
+//Reduce quantity after purchase
 export const reduceQuantity = async (req, res) => {
     try {
         const { id } = req.params;

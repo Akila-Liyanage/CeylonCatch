@@ -3,6 +3,7 @@ import { useParams } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, DollarSign, Package, TrendingUp, Calendar, Eye, RefreshCw, Search, Filter, Plus } from 'lucide-react';
 import axios from 'axios';
+import '../bid.css';
 
 const BidHistory = () => {
     const { id } = useParams(); // Get user ID from URL parameter
@@ -13,6 +14,16 @@ const BidHistory = () => {
     const [userInfo, setUserInfo] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('All Types');
+
+    // VALIDATION: Handle search input change with symbol filtering
+    // Prevents special characters and symbols from being entered
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        // Only allow alphanumeric characters, spaces, hyphens, and underscores
+        // This prevents SQL injection, XSS, and other security issues
+        const sanitizedValue = value.replace(/[^a-zA-Z0-9\s\-_]/g, '');
+        setSearchTerm(sanitizedValue);
+    };
 
     console.log('BidHistory component rendered with user ID:', id);
 
@@ -138,10 +149,11 @@ const BidHistory = () => {
     };
 
     const getStatusColor = (status) => {
+        // Return CSS class names for our enhanced status badges
         switch (status) {
-            case 'leading': return '#10b981'; // Green
-            case 'outbid': return '#f59e0b'; // Orange
-            default: return '#6b7280'; // Gray
+            case 'leading': return 'status-badge open';
+            case 'outbid': return 'status-badge pending';
+            default: return 'status-badge draft';
         }
     };
 
@@ -154,63 +166,132 @@ const BidHistory = () => {
     };
 
     // Filter bids based on search term
-    const filteredBids = bids.filter(bid => 
-        bid.itemId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        bid.itemId?.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // VALIDATION: Filter bids based on search term with sanitization
+    // Search input is sanitized to prevent symbols and special characters
+    const filteredBids = bids.filter(bid => {
+        // Sanitize search term to prevent injection attacks and improve search accuracy
+        const sanitizedSearchTerm = searchTerm.replace(/[^a-zA-Z0-9\s\-_]/g, '').toLowerCase().trim();
+        
+        // Perform case-insensitive search on bid item properties
+        // VALIDATION: Check if search term exists in item name or description
+        return sanitizedSearchTerm === '' || 
+               bid.itemId?.name?.toLowerCase().includes(sanitizedSearchTerm) ||
+               bid.itemId?.description?.toLowerCase().includes(sanitizedSearchTerm);
+    });
 
     // Calculate statistics
     const totalBids = bids.length;
     const leadingBids = bids.filter(bid => getBidStatus(bid, bids) === 'leading').length;
     const outbidBids = bids.filter(bid => getBidStatus(bid, bids) === 'outbid').length;
 
+    // Animation variants
+    const containerVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: { duration: 0.6, staggerChildren: 0.1 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: { duration: 0.5 }
+        }
+    };
+
+    const statsVariants = {
+        hidden: { scale: 0.8, opacity: 0 },
+        visible: { 
+            scale: 1, 
+            opacity: 1,
+            transition: { type: "spring", stiffness: 300, damping: 20 }
+        }
+    };
+
     if (loading) {
         return (
-            <div style={styles.loadingContainer}>
+            <div className="animated-bg" style={{ padding: '2rem' }}>
+                <div className="glass-container" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                    padding: '5rem',
+                    textAlign: 'center'
+            }}>
                 <motion.div
-                    style={styles.loader}
+                    style={{
+                        width: '4rem',
+                        height: '4rem',
+                        border: '4px solid rgba(255, 255, 255, 0.2)',
+                            borderTop: '4px solid #64ffda',
+                            borderRadius: '50%'
+                    }}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
                 <motion.p
-                    style={styles.loadingText}
+                        className="card-title"
+                        style={{ marginTop: '2rem' }}
                     animate={{ opacity: [0.5, 1, 0.5] }}
                     transition={{ duration: 2, repeat: Infinity }}
                 >
                     Loading your bid history...
                 </motion.p>
+                </div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div style={styles.errorContainer}>
+            <div className="animated-bg" style={{ padding: '2rem' }}>
                 <motion.div
-                    style={styles.errorCard}
+                    className="glass-container"
+                    style={{
+                        padding: '3rem',
+                        textAlign: 'center',
+                        maxWidth: '32rem',
+                        margin: '0 auto'
+                    }}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
-                    <h3 style={styles.errorTitle}>
+                    <motion.div 
+                        style={{ fontSize: '4rem', marginBottom: '1.5rem' }}
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                    >
+                        🔐
+                    </motion.div>
+                    <h3 className="card-title" style={{ marginBottom: '1.5rem' }}>
                         {error === "Please login to view your bid history" ? "Login Required" : "Error"}
                     </h3>
-                    <p style={styles.errorText}>{error}</p>
-                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <p className="card-description" style={{ marginBottom: '2rem' }}>{error}</p>
+                    <div style={{
+                        display: 'flex',
+                        gap: '1rem',
+                        justifyContent: 'center',
+                        flexWrap: 'wrap'
+                    }}>
                         {error === "Please login to view your bid history" ? (
                             <>
                                 <motion.button
-                                    style={{...styles.retryButton, backgroundColor: '#3b82f6'}}
-                                    whileHover={{ scale: 1.05 }}
+                                    className="enhanced-button"
+                                    whileHover={{ scale: 1.05, y: -2 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => window.location.href = '/buyerlogin'}
                                 >
                                     Login as Buyer
                                 </motion.button>
                                 <motion.button
-                                    style={{...styles.retryButton, backgroundColor: '#10b981'}}
-                                    whileHover={{ scale: 1.05 }}
+                                    className="enhanced-button"
+                                    whileHover={{ scale: 1.05, y: -2 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => window.location.href = '/sellerlogin'}
                                 >
@@ -219,12 +300,12 @@ const BidHistory = () => {
                             </>
                         ) : (
                             <motion.button
-                                style={{...styles.retryButton, backgroundColor: '#667eea'}}
-                                whileHover={{ scale: 1.05 }}
+                                className="enhanced-button"
+                                whileHover={{ scale: 1.05, y: -2 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleRefresh}
                             >
-                                <RefreshCw size={16} style={{ marginRight: '8px' }} />
+                                <RefreshCw size={20} />
                                 Try Again
                             </motion.button>
                         )}
@@ -236,70 +317,99 @@ const BidHistory = () => {
 
     return (
         <motion.div
-            style={styles.container}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            className="animated-bg"
+            style={{ padding: '2rem' }}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
         >
-            {/* Header */}
+            {/* Enhanced Header with Glass Morphism */}
             <motion.div
-                style={styles.header}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                variants={itemVariants}
+                style={{
+                    padding: '2rem',
+                    marginBottom: '2rem',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '1.5rem',
+                    boxShadow: '0 20px 25px -12px rgba(0, 0, 0, 0.25)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}
             >
-                <div style={styles.headerContent}>
-                    <Package size={32} style={styles.headerIcon} />
+                <div className="header-content">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ 
+                            padding: '0.75rem',
+                            background: 'var(--accent-gradient)', 
+                            borderRadius: 'var(--radius-xl)',
+                            boxShadow: 'var(--shadow-lg)'
+                        }}>
+                        <Package size={32} style={{ color: 'white' }} />
+                        </div>
                     <div>
-                        <h1 style={styles.title}>Bid History Dashboard</h1>
-                        <p style={styles.subtitle}>
-                            {userInfo ? `Welcome, ${userInfo.userName}` : 'Track all your auction activities'}
-                        </p>
+                            <h1 className="header-title">Bid History Dashboard</h1>
+                            <p className="header-subtitle">{userInfo ? `Welcome, ${userInfo.userName}` : 'Track all your auction activities'}</p>
                     </div>
                 </div>
-                <div style={styles.headerStats}>
+                    <div className="stats-grid">
+                        <motion.div
+                            className="stat-card"
+                            variants={itemVariants}
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <span className="stat-number">{totalBids}</span>
+                            <span className="stat-label">Total Bids</span>
+                        </motion.div>
+                        
                     <motion.div
-                        style={styles.statsCard}
-                        whileHover={{ scale: 1.02 }}
+                            className="stat-card"
+                            variants={itemVariants}
+                            whileHover={{ scale: 1.05, y: -2 }}
                         transition={{ type: "spring", stiffness: 300 }}
                     >
-                        <span style={styles.statsNumber}>{totalBids}</span>
-                        <span style={styles.statsLabel}>TOTAL BIDS</span>
+                            <span className="stat-number">{leadingBids}</span>
+                            <span className="stat-label">Leading Bids</span>
                     </motion.div>
+                        
                 <motion.div
-                    style={styles.statsCard}
-                    whileHover={{ scale: 1.02 }}
+                            className="stat-card"
+                            variants={itemVariants}
+                            whileHover={{ scale: 1.05, y: -2 }}
                     transition={{ type: "spring", stiffness: 300 }}
                 >
-                        <span style={styles.statsNumber}>{leadingBids}</span>
-                        <span style={styles.statsLabel}>LEADING</span>
+                            <span className="stat-number">{outbidBids}</span>
+                            <span className="stat-label">Outbid</span>
                     </motion.div>
+                    </div>
                 </div>
                 </motion.div>
 
-            {/* Search and Filter Bar */}
+            {/* Enhanced Search and Filter Bar */}
             <motion.div
-                style={styles.searchBar}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
+                className="search-container"
+                variants={itemVariants}
             >
-                <div style={styles.searchContainer}>
-                    <Search size={20} style={styles.searchIcon} />
+                <div style={{ position: 'relative', flex: 1 }}>
+                    <Search size={20} className="search-icon" />
                     <input
                         type="text"
-                        placeholder="Search by name, SKU, or description..."
+                        placeholder="Search by name, description, or type..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={styles.searchInput}
+                        onChange={handleSearchChange}
+                        className="search-input"
+                        maxLength={100}
+                        title="Only letters, numbers, spaces, hyphens, and underscores are allowed"
                     />
                 </div>
-                <div style={styles.filterContainer}>
-                    <Filter size={16} style={styles.filterIcon} />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Filter size={16} className="filter-icon" />
                     <select
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
-                        style={styles.filterSelect}
+                        className="filter-select"
                     >
                         <option value="All Types">All Types</option>
                         <option value="Leading">Leading</option>
@@ -307,9 +417,9 @@ const BidHistory = () => {
                     </select>
                 </div>
                 <motion.button
-                    style={styles.refreshButton}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="refresh-btn"
+                    whileHover={{ scale: 1.1, rotate: 180 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={handleRefresh}
                 >
                     <RefreshCw size={20} />
@@ -320,113 +430,287 @@ const BidHistory = () => {
             <AnimatePresence>
                 {filteredBids.length === 0 ? (
                     <motion.div
-                        style={styles.emptyState}
+                        className="glass-container"
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '5rem',
+                            textAlign: 'center'
+                        }}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Package size={64} style={styles.emptyIcon} />
-                        <h3 style={styles.emptyTitle}>No bids found</h3>
-                        <p style={styles.emptyText}>Start bidding on items you love!</p>
+                        <motion.div
+                            style={{
+                                padding: '1.5rem',
+                                background: 'linear-gradient(135deg, #ec4899 0%, #9333ea 100%)',
+                                borderRadius: '50%',
+                                marginBottom: '1.5rem',
+                                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                            }}
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 4, repeat: Infinity }}
+                        >
+                            <Package size={64} style={{ color: 'white' }} />
+                        </motion.div>
+                        <h3 className="card-title" style={{ marginBottom: '1rem' }}>No bids found</h3>
+                        <p className="card-description" style={{ marginBottom: '2rem' }}>Start bidding on items you love!</p>
                         <motion.button
-                            style={styles.browseButton}
-                            whileHover={{ scale: 1.05 }}
+                            className="enhanced-button"
+                            whileHover={{ scale: 1.05, y: -2 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => window.location.href = '/items'}
                         >
-                            <Plus size={16} style={{ marginRight: '8px' }} />
+                            <Plus size={20} />
                             Browse Items
                         </motion.button>
                     </motion.div>
                 ) : (
                     <motion.div
-                        style={styles.tableContainer}
+                        className="glass-container"
+                        style={{
+                            overflow: 'hidden'
+                        }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
                     >
-                        <div style={styles.table}>
+                        <div style={{ width: '100%' }}>
                             {/* Table Header */}
-                            <div style={styles.tableHeader}>
-                                <div style={styles.headerCell}>NAME</div>
-                                <div style={styles.headerCell}>TYPE</div>
-                                <div style={styles.headerCell}>PRICE</div>
-                                <div style={styles.headerCell}>STATUS</div>
-                                <div style={styles.headerCell}>QUALITY</div>
-                                <div style={styles.headerCell}>ACTIONS</div>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(6, 1fr)',
+                                background: 'linear-gradient(90deg, rgba(236, 72, 153, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)',
+                                borderBottom: '1px solid rgba(255, 255, 255, 0.2)'
+                            }}>
+                                <div style={{
+                                    padding: '1.5rem',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 'bold',
+                                    color: 'white',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>NAME</div>
+                                <div style={{
+                                    padding: '1.5rem',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 'bold',
+                                    color: 'white',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>TYPE</div>
+                                <div style={{
+                                    padding: '1.5rem',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 'bold',
+                                    color: 'white',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>PRICE</div>
+                                <div style={{
+                                    padding: '1.5rem',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 'bold',
+                                    color: 'white',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>STATUS</div>
+                                <div style={{
+                                    padding: '1.5rem',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 'bold',
+                                    color: 'white',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>QUALITY</div>
+                                <div style={{
+                                    padding: '1.5rem',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 'bold',
+                                    color: 'white',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>ACTIONS</div>
                             </div>
 
                             {/* Table Rows */}
                             {filteredBids.map((bid, index) => {
                                 const bidStatus = getBidStatus(bid, bids);
+                                const statusColors = getStatusColor(bidStatus);
                                 return (
                             <motion.div
                                 key={bid._id}
-                                        style={styles.tableRow}
+                                        style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(6, 1fr)',
+                                            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                                            transition: 'all 0.3s ease'
+                                        }}
                                         initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.5, delay: index * 0.05 }}
-                                whileHover={{ 
-                                            backgroundColor: 'rgba(255, 255, 255, 0.05)'
-                                        }}
+                                        whileHover={{ scale: 1.01, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
                                     >
-                                        <div style={styles.tableCell}>
-                                            <div style={styles.itemInfo}>
-                                                <div style={styles.itemIcon}>🐟</div>
-                                                <span style={styles.itemName}>
+                                        <div style={{
+                                            padding: '1.5rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            fontSize: '0.875rem',
+                                            color: 'white'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <motion.div 
+                                                    style={{ fontSize: '1.5rem' }}
+                                                    animate={{ rotate: [0, 10, -10, 0] }}
+                                                    transition={{ duration: 3, repeat: Infinity, delay: index * 0.2 }}
+                                                >
+                                                    🐟
+                                                </motion.div>
+                                                <span style={{
+                                                    fontWeight: '600',
+                                                    fontSize: '1.125rem'
+                                                }}>
                                                     {bid.itemId?.name || 'Unknown Item'}
                                                 </span>
                                             </div>
                                         </div>
-                                        <div style={styles.tableCell}>
-                                            <span style={styles.typeBadge}>{bid.itemId?.fishType || 'FRESH'}</span>
+                                        <div style={{
+                                            padding: '1.5rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            fontSize: '0.875rem',
+                                            color: 'white'
+                                        }}>
+                                            <span style={{
+                                                background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.3) 0%, rgba(20, 184, 166, 0.3) 100%)',
+                                                color: '#6ee7b7',
+                                                padding: '0.5rem 1rem',
+                                                borderRadius: '9999px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 'bold',
+                                                border: '1px solid rgba(16, 185, 129, 0.3)'
+                                            }}>
+                                                {bid.itemId?.fishType || 'FRESH'}
+                                            </span>
                                         </div>
-                                        <div style={styles.tableCell}>
-                                            <span style={styles.priceText}>
+                                        <div style={{
+                                            padding: '1.5rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            fontSize: '0.875rem',
+                                            color: 'white'
+                                        }}>
+                                            <span style={{
+                                                fontWeight: 'bold',
+                                                fontSize: '1.125rem',
+                                                background: 'linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)',
+                                                WebkitBackgroundClip: 'text',
+                                                WebkitTextFillColor: 'transparent'
+                                            }}>
                                                 Rs.{bid.bidAmount.toLocaleString()}
                                             </span>
                                         </div>
-                                        <div style={styles.tableCell}>
-                                            <span 
-                                        style={{
-                                            ...styles.statusBadge,
-                                                    backgroundColor: getStatusColor(bidStatus)
-                                        }}
-                                    >
-                                                <div style={styles.statusDot}></div>
+                                        <div style={{
+                                            padding: '1.5rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            fontSize: '0.875rem',
+                                            color: 'white'
+                                        }}>
+                                            <span                                             className={statusColors}>
+                                                <div className="status-dot"></div>
                                                 {bidStatus.toUpperCase()}
                                         </span>
                                 </div>
-                                        <div style={styles.tableCell}>
-                                            <span style={styles.qualityBadge}>
+                                        <div style={{
+                                            padding: '1.5rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            fontSize: '0.875rem',
+                                            color: 'white'
+                                        }}>
+                                            <span style={{
+                                                background: 'linear-gradient(90deg, rgba(245, 158, 11, 0.3) 0%, rgba(251, 191, 36, 0.3) 100%)',
+                                                color: '#fcd34d',
+                                                padding: '0.5rem 1rem',
+                                                borderRadius: '9999px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 'bold',
+                                                border: '1px solid rgba(245, 158, 11, 0.3)'
+                                            }}>
                                                 {bid.itemId?.quality || 'Grade A'}
                                             </span>
                                         </div>
-                                        <div style={styles.tableCell}>
-                                            <div style={styles.actionButtons}>
+                                        <div style={{
+                                            padding: '1.5rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            fontSize: '0.875rem',
+                                            color: 'white'
+                                        }}>
+                                            <div style={{ display: 'flex', gap: '0.75rem' }}>
                                                 <motion.button
-                                                    style={{...styles.actionButton, backgroundColor: '#8b5cf6'}}
-                                                    whileHover={{ scale: 1.1 }}
+                                                    style={{
+                                                        width: '2.5rem',
+                                                        height: '2.5rem',
+                                                        borderRadius: '50%',
+                                                        border: 'none',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        cursor: 'pointer',
+                                                        color: 'white',
+                                                        background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+                                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                                                    }}
+                                                    whileHover={{ scale: 1.15, rotate: 5 }}
                                                     whileTap={{ scale: 0.9 }}
                                                     onClick={() => setSelectedBid(selectedBid === bid._id ? null : bid._id)}
                                                 >
-                                                    <Eye size={16} />
+                                                    <Eye size={18} />
                                                 </motion.button>
                                                 <motion.button
-                                                    style={{...styles.actionButton, backgroundColor: '#10b981'}}
-                                                    whileHover={{ scale: 1.1 }}
+                                                    style={{
+                                                        width: '2.5rem',
+                                                        height: '2.5rem',
+                                                        borderRadius: '50%',
+                                                        border: 'none',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        cursor: 'pointer',
+                                                        color: 'white',
+                                                        background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
+                                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                                                    }}
+                                                    whileHover={{ scale: 1.15, rotate: -5 }}
                                                     whileTap={{ scale: 0.9 }}
                                                     onClick={() => window.location.href = `/items/${bid.itemId?._id}`}
                                                 >
-                                                    <TrendingUp size={16} />
+                                                    <TrendingUp size={18} />
                                                 </motion.button>
                                                 <motion.button
-                                                    style={{...styles.actionButton, backgroundColor: '#ef4444'}}
-                                                    whileHover={{ scale: 1.1 }}
+                                                    style={{
+                                                        width: '2.5rem',
+                                                        height: '2.5rem',
+                                                        borderRadius: '50%',
+                                                        border: 'none',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        cursor: 'pointer',
+                                                        color: 'white',
+                                                        background: 'linear-gradient(135deg, #ef4444 0%, #ec4899 100%)',
+                                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                                                    }}
+                                                    whileHover={{ scale: 1.15, rotate: 5 }}
                                                     whileTap={{ scale: 0.9 }}
                                                 >
-                                                    <Package size={16} />
+                                                    <Package size={18} />
                                                 </motion.button>
                                         </div>
                                     </div>
@@ -439,335 +723,6 @@ const BidHistory = () => {
             </AnimatePresence>
         </motion.div>
     );
-};
-
-const styles = {
-    container: {
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        padding: '20px',
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    },
-    loadingContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '400px',
-        gap: '20px',
-    },
-    loader: {
-        width: '50px',
-        height: '50px',
-        border: '4px solid #374151',
-        borderTop: '4px solid #00c2c9',
-        borderRadius: '50%',
-    },
-    loadingText: {
-        fontSize: '18px',
-        color: '#9ca3af',
-        margin: 0,
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '30px',
-        padding: '30px',
-        background: 'rgba(15, 23, 42, 0.8)',
-        borderRadius: '16px',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-    },
-    headerContent: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px',
-    },
-    headerIcon: {
-        color: '#00c2c9',
-    },
-    title: {
-        fontSize: '32px',
-        fontWeight: '700',
-        color: '#ffffff',
-        margin: 0,
-    },
-    subtitle: {
-        fontSize: '16px',
-        color: '#9ca3af',
-        margin: '5px 0 0 0',
-    },
-    headerStats: {
-        display: 'flex',
-        gap: '16px',
-    },
-    statsCard: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '20px',
-        background: 'rgba(0, 194, 201, 0.1)',
-        borderRadius: '12px',
-        color: 'white',
-        minWidth: '100px',
-        border: '1px solid rgba(0, 194, 201, 0.2)',
-    },
-    statsNumber: {
-        fontSize: '24px',
-        fontWeight: '800',
-        color: '#00c2c9',
-    },
-    statsLabel: {
-        fontSize: '12px',
-        opacity: 0.9,
-        marginTop: '5px',
-        fontWeight: '600',
-    },
-    searchBar: {
-        display: 'flex',
-        gap: '16px',
-        marginBottom: '30px',
-        alignItems: 'center',
-    },
-    searchContainer: {
-        position: 'relative',
-        flex: 1,
-    },
-    searchIcon: {
-        position: 'absolute',
-        left: '16px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        color: '#9ca3af',
-    },
-    searchInput: {
-        width: '100%',
-        padding: '12px 16px 12px 48px',
-        background: 'rgba(15, 23, 42, 0.8)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '12px',
-        color: '#ffffff',
-        fontSize: '14px',
-        outline: 'none',
-    },
-    filterContainer: {
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-    },
-    filterIcon: {
-        position: 'absolute',
-        left: '12px',
-        color: '#9ca3af',
-        zIndex: 1,
-    },
-    filterSelect: {
-        padding: '12px 16px 12px 40px',
-        background: 'rgba(15, 23, 42, 0.8)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '12px',
-        color: '#ffffff',
-        fontSize: '14px',
-        outline: 'none',
-        minWidth: '120px',
-    },
-    refreshButton: {
-        background: 'rgba(0, 194, 201, 0.1)',
-        color: '#00c2c9',
-        border: '1px solid rgba(0, 194, 201, 0.2)',
-        borderRadius: '12px',
-        width: '48px',
-        height: '48px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-    },
-    tableContainer: {
-        background: 'rgba(15, 23, 42, 0.8)',
-        borderRadius: '16px',
-        overflow: 'hidden',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-    },
-    table: {
-        width: '100%',
-    },
-    tableHeader: {
-        display: 'grid',
-        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr',
-        background: 'rgba(0, 194, 201, 0.1)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    },
-    headerCell: {
-        padding: '16px',
-        fontSize: '12px',
-        fontWeight: '600',
-        color: '#9ca3af',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-    },
-    tableRow: {
-        display: 'grid',
-        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-        transition: 'background-color 0.2s ease',
-    },
-    tableCell: {
-        padding: '16px',
-        display: 'flex',
-        alignItems: 'center',
-        fontSize: '14px',
-        color: '#ffffff',
-    },
-    itemInfo: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-    },
-    itemIcon: {
-        fontSize: '20px',
-    },
-    itemName: {
-        fontWeight: '500',
-    },
-    skuText: {
-        color: '#9ca3af',
-        fontSize: '12px',
-        fontWeight: '500',
-    },
-    typeBadge: {
-        background: 'rgba(0, 194, 201, 0.2)',
-        color: '#00c2c9',
-        padding: '4px 12px',
-        borderRadius: '20px',
-        fontSize: '12px',
-        fontWeight: '600',
-    },
-    priceText: {
-        fontWeight: '600',
-        color: '#ffffff',
-    },
-    statusBadge: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        padding: '6px 12px',
-        borderRadius: '20px',
-        fontSize: '12px',
-        fontWeight: '600',
-        color: '#ffffff',
-    },
-    statusDot: {
-        width: '6px',
-        height: '6px',
-        borderRadius: '50%',
-        backgroundColor: 'currentColor',
-    },
-    qualityBadge: {
-        background: 'rgba(245, 158, 11, 0.2)',
-        color: '#f59e0b',
-        padding: '4px 12px',
-        borderRadius: '20px',
-        fontSize: '12px',
-        fontWeight: '600',
-    },
-    actionButtons: {
-        display: 'flex',
-        gap: '8px',
-    },
-    actionButton: {
-        width: '32px',
-        height: '32px',
-        borderRadius: '50%',
-        border: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        color: '#ffffff',
-    },
-    emptyState: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '80px 40px',
-        background: 'rgba(15, 23, 42, 0.8)',
-        borderRadius: '16px',
-        textAlign: 'center',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-    },
-    emptyIcon: {
-        color: '#6b7280',
-        marginBottom: '20px',
-    },
-    emptyTitle: {
-        fontSize: '24px',
-        color: '#ffffff',
-        margin: '0 0 10px 0',
-        fontWeight: '600',
-    },
-    emptyText: {
-        fontSize: '16px',
-        color: '#9ca3af',
-        margin: '0 0 30px 0',
-    },
-    browseButton: {
-        background: 'linear-gradient(135deg, #00c2c9, #156eae)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '12px',
-        padding: '12px 24px',
-        fontSize: '14px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-    },
-    errorContainer: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '400px',
-        padding: '20px',
-    },
-    errorCard: {
-        background: 'rgba(15, 23, 42, 0.9)',
-        borderRadius: '16px',
-        padding: '40px',
-        textAlign: 'center',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        maxWidth: '400px',
-    },
-    errorTitle: {
-        fontSize: '24px',
-        color: '#ef4444',
-        margin: '0 0 15px 0',
-        fontWeight: '600',
-    },
-    errorText: {
-        fontSize: '16px',
-        color: '#9ca3af',
-        margin: '0 0 25px 0',
-        lineHeight: '1.5',
-    },
-    retryButton: {
-        background: 'linear-gradient(135deg, #00c2c9, #156eae)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '12px',
-        padding: '12px 24px',
-        fontSize: '14px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-    },
 };
 
 export default BidHistory;

@@ -1,0 +1,25 @@
+CeylonCatch is a full-stack e-commerce platform for the fish and seafood marketplace, featuring a real-time auction-based bidding system. The platform connects buyers and sellers with complete inventory management, order processing, and financial operations.
+
+Key Features:
+• Multi-User System: Separate dashboards for Buyers, Sellers, and Administrators with role-based access control
+• Real-Time Bidding: Live auction functionality using Socket.io for instant bid updates
+• Multi-Seller Inventory: Each seller maintains separate inventory with full CRUD operations. Sellers manage items independently while administrators have centralized oversight
+• Secure Authentication: JWT-based authentication with OTP verification via Twilio SMS
+• Payment Integration: PayHere payment gateway for secure transactions
+• Financial Management: Admin finance system with payroll, attendance tracking, invoices, and reports
+• File Upload: Image upload using Multer for fish lot management
+• PDF Generation: Automated report and invoice generation using jsPDF
+• Responsive Design: Modern UI using Tailwind CSS and Material-UI, works across all devices
+• OCR Support: Text extraction from images using Tesseract.js
+
+Technical Implementation:
+- RESTful API with Express.js serving endpoints for items, bids, orders, inventory, finance, and user management
+- MongoDB with Mongoose ODM for efficient data modeling
+- Real-time communication using Socket.io for live updates
+- Input validation using Joi for data integrity
+- Security: Password hashing with bcryptjs, CORS, Helmet.js
+- Modular MVC architecture with controllers, models, and routes
+
+The platform handles complex business logic including bid validation, multi-seller inventory tracking, order management, and financial reporting, demonstrating full-stack development proficiency.
+
+Technologies: React 19, Node.js, Express.js, MongoDB, Socket.io, JWT, Tailwind CSS, Material-UI, PayHere, Twilio, Multer, jsPDF

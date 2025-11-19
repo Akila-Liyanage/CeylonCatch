@@ -15,7 +15,7 @@ export const createTransaction = async (req, res) => {
 // Get all user transactions
 export const getTransactions = async (req, res) => {
   try {
-    const txs = await Transaction.find({ userId: req.user.id }).populate("paymentMethod");
+    const txs = await Transaction.find({ userId: req.user?.id || 'guest' });
     res.json(txs);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -25,9 +25,12 @@ export const getTransactions = async (req, res) => {
 // Admin: get all transactions
 export const getAllTransactions = async (req, res) => {
   try {
-    const txs = await Transaction.find().populate("userId paymentMethod");
+    console.log('Fetching all transactions...');
+    const txs = await Transaction.find();
+    console.log(`Found ${txs.length} transactions`);
     res.json(txs);
   } catch (err) {
+    console.error('Error fetching transactions:', err);
     res.status(500).json({ error: err.message });
   }
 };

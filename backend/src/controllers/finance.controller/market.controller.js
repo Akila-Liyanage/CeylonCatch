@@ -5,7 +5,7 @@ import Transaction from '../../models/finance.model/Transaction.model.js';
 // Create income/expense entry
 export const createMarketEntry = async (req, res) => {
     try {
-        const { entryType, amount, category, description, paymentMethod, receiptNumber, date, notes } = req.body || {};
+        const { id, entryType, amount, category, description, paymentMethod, receiptNumber, date, notes, receiptImageData, receiptImageName } = req.body || {};
         if (!entryType || !["income", "expense"].includes(entryType)) {
             return res.status(400).json({ error: 'entryType must be income or expense' });
         }
@@ -14,6 +14,7 @@ export const createMarketEntry = async (req, res) => {
         }
         const parsedDate = date ? new Date(date) : new Date();
         const entry = new MarketEntry({
+            id, // Include the custom ID from frontend
             entryType,
             amount: Number(amount),
             category,
@@ -22,6 +23,8 @@ export const createMarketEntry = async (req, res) => {
             receiptNumber,
             date: parsedDate,
             note: notes, // Map notes to note field
+            receiptImageData: receiptImageData || null,
+            receiptImageName: receiptImageName || null,
             createdBy: req.user?.id,
         });
         await entry.save();
@@ -101,7 +104,7 @@ export const getMonthlyMarketReport = async (req, res) => {
 export const updateMarketEntry = async (req, res) => {
     try {
         const { id } = req.params;
-        const { entryType, amount, category, description, paymentMethod, receiptNumber, date, notes } = req.body || {};
+        const { id: customId, entryType, amount, category, description, paymentMethod, receiptNumber, date, notes, receiptImageData, receiptImageName } = req.body || {};
 
         if (entryType && !["income", "expense"].includes(entryType)) {
             return res.status(400).json({ error: 'entryType must be income or expense' });
@@ -111,6 +114,7 @@ export const updateMarketEntry = async (req, res) => {
         }
 
         const updateData = {};
+        if (customId) updateData.id = customId; // Update custom ID if provided
         if (entryType) updateData.entryType = entryType;
         if (amount !== undefined) updateData.amount = Number(amount);
         if (category) updateData.category = category;
@@ -119,6 +123,8 @@ export const updateMarketEntry = async (req, res) => {
         if (receiptNumber) updateData.receiptNumber = receiptNumber;
         if (date) updateData.date = new Date(date);
         if (notes) updateData.note = notes;
+        if (receiptImageData !== undefined) updateData.receiptImageData = receiptImageData;
+        if (receiptImageName !== undefined) updateData.receiptImageName = receiptImageName;
 
         const entry = await MarketEntry.findByIdAndUpdate(id, updateData, { new: true });
         if (!entry) {

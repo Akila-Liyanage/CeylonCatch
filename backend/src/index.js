@@ -6,7 +6,7 @@ import connectDB from './util/DB.js';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import  itemRoutes from './routes/item.routes.js';
+import itemRoutes from './routes/item.routes.js';
 import bidRoutes from './routes/bid.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import inventoryRoutes from './routes/inventory.routes.js';

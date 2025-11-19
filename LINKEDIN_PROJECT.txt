@@ -1,0 +1,116 @@
+==========================================
+LINKEDIN PROJECT FORM - CEYLONCATCH
+==========================================
+
+PROJECT NAME:
+CeylonCatch - Fish & Seafood Marketplace Platform
+
+==========================================
+
+DESCRIPTION (1,998 characters):
+CeylonCatch is a comprehensive full-stack e-commerce platform designed for the fish and seafood marketplace, featuring a real-time auction-based bidding system. The platform connects buyers and sellers through an innovative marketplace with complete inventory management, order processing, and financial operations.
+
+Key Features & Achievements:
+
+• Multi-User System: Implemented separate dashboards for Buyers, Sellers, and Administrators with role-based access control
+• Real-Time Bidding System: Built live auction functionality using Socket.io for instant bid updates and notifications
+• Multi-Seller Inventory Management: Developed a sophisticated inventory system where each seller maintains their own separate inventory with full CRUD operations (Create, Read, Update, Delete). Sellers can independently manage their items while administrators have centralized oversight of all inventories
+• Secure Authentication: Implemented JWT-based authentication with OTP verification via Twilio SMS integration
+• Payment Integration: Integrated PayHere payment gateway for secure transaction processing
+• Financial Management Module: Built comprehensive admin finance system including payroll, employee attendance tracking, invoice generation, and transaction reports
+• File Upload System: Implemented image upload functionality using Multer for fish lot management
+• PDF Generation: Automated report and invoice generation using jsPDF
+• Responsive Design: Created modern, responsive UI using Tailwind CSS and Material-UI that works seamlessly across desktop, tablet, and mobile devices
+• OCR Support: Integrated Tesseract.js for text extraction from images
+
+Technical Implementation:
+- RESTful API architecture with Express.js serving multiple endpoints for items, bids, orders, inventory, finance, and user management
+- MongoDB database with Mongoose ODM for efficient data modeling and relationships
+- Real-time bidirectional communication using Socket.io for live updates
+- Input validation using Joi for data integrity
+- Security features including password hashing with bcryptjs, CORS configuration, and Helmet.js
+- Modular MVC architecture with separate controllers, models, and routes for maintainability
+
+The platform successfully handles complex business logic including bid validation, inventory tracking across multiple sellers, order management, and comprehensive financial reporting, demonstrating proficiency in full-stack development and system architecture.
+
+==========================================
+
+SKILLS (Top 5):
+1. React
+2. Node.js
+3. MongoDB
+4. Express.js
+5. Socket.io
+
+Additional Skills (if you want to add more):
+- JavaScript
+- RESTful API
+- JWT Authentication
+- Tailwind CSS
+- Material-UI
+
+==========================================
+
+ADDITIONAL DETAILS (Optional - you can add this):
+GitHub Repository: [Add your GitHub link here]
+Live Demo: [Add demo link if available]
+
+Technologies Used:
+Backend: Node.js, Express.js, MongoDB, Mongoose, Socket.io, JWT, bcryptjs, Multer, Twilio, Joi, jsPDF
+Frontend: React 19, Vite, React Router, Tailwind CSS, Material-UI, Chart.js, Axios, Socket.io Client, Tesseract.js
+
+Key Accomplishments:
+- Developed a scalable multi-user marketplace platform with role-based access control
+- Implemented real-time bidding system with Socket.io for live auction functionality
+- Built comprehensive inventory management system supporting multiple independent sellers
+- Integrated third-party services (PayHere, Twilio) for payments and OTP verification
+- Created responsive, modern UI with optimized user experience across all devices
+
+==========================================
+
+DATES:
+Start Date: [Select the month and year when you started]
+End Date: [Select "I am currently working on this project" OR select end date]
+
+==========================================
+
+ASSOCIATED WITH:
+[Select if this was for a company, school, or personal project]
+
+==========================================
+
+MEDIA (Optional):
+You can add:
+- Screenshots of the application
+- GitHub repository link
+- Demo video
+- Project presentation
+
+==========================================
+
+COPY-PASTE READY VERSION (Description only):
+CeylonCatch is a comprehensive full-stack e-commerce platform designed for the fish and seafood marketplace, featuring a real-time auction-based bidding system. The platform connects buyers and sellers through an innovative marketplace with complete inventory management, order processing, and financial operations.
+
+Key Features & Achievements:
+
+• Multi-User System: Implemented separate dashboards for Buyers, Sellers, and Administrators with role-based access control
+• Real-Time Bidding System: Built live auction functionality using Socket.io for instant bid updates and notifications
+• Multi-Seller Inventory Management: Developed a sophisticated inventory system where each seller maintains their own separate inventory with full CRUD operations (Create, Read, Update, Delete). Sellers can independently manage their items while administrators have centralized oversight of all inventories
+• Secure Authentication: Implemented JWT-based authentication with OTP verification via Twilio SMS integration
+• Payment Integration: Integrated PayHere payment gateway for secure transaction processing
+• Financial Management Module: Built comprehensive admin finance system including payroll, employee attendance tracking, invoice generation, and transaction reports
+• File Upload System: Implemented image upload functionality using Multer for fish lot management
+• PDF Generation: Automated report and invoice generation using jsPDF
+• Responsive Design: Created modern, responsive UI using Tailwind CSS and Material-UI that works seamlessly across desktop, tablet, and mobile devices
+• OCR Support: Integrated Tesseract.js for text extraction from images
+
+Technical Implementation:
+- RESTful API architecture with Express.js serving multiple endpoints for items, bids, orders, inventory, finance, and user management
+- MongoDB database with Mongoose ODM for efficient data modeling and relationships
+- Real-time bidirectional communication using Socket.io for live updates
+- Input validation using Joi for data integrity
+- Security features including password hashing with bcryptjs, CORS configuration, and Helmet.js
+- Modular MVC architecture with separate controllers, models, and routes for maintainability
+
+The platform successfully handles complex business logic including bid validation, inventory tracking across multiple sellers, order management, and comprehensive financial reporting, demonstrating proficiency in full-stack development and system architecture.
+

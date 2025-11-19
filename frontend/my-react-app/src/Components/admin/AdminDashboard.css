@@ -1,9 +1,9 @@
 /* Admin Dashboard - Modern Sidebar Layout */
-.inventory-wrapper {
+.admin-dashboard {
   display: flex;
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  background-color: lab(5.67% 18.37 -31.68);
+  background-color: #f8f9fa;
 }
 
 /* Sidebar */

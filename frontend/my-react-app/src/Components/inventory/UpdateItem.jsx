@@ -12,7 +12,23 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
   const [uploading, setUploading] = useState(false)
   const [imagePreview, setImagePreview] = useState(item.imageURL || null)
   
-  const onChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
+  const onChange = (e) => {
+    const { name, value } = e.target
+    
+    // Date validation for expiry date
+    if (name === 'expiryDate' && value) {
+      const selectedDate = new Date(value)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset time to start of day
+      
+      if (selectedDate < today) {
+        setError('Expiry date cannot be in the past. Please select a future date.')
+        return
+      }
+    }
+    
+    setForm((p) => ({ ...p, [name]: value }))
+  }
 
   // Handle image upload from laptop
   const handleImageUpload = async (e) => {
@@ -117,6 +133,19 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    
+    // Validate expiry date before submission
+    if (form.expiryDate) {
+      const selectedDate = new Date(form.expiryDate)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      if (selectedDate < today) {
+        setError('Expiry date cannot be in the past. Please select a future date.')
+        return
+      }
+    }
+    
     try {
       setSubmitting(true)
       
@@ -154,16 +183,16 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h3 className="modal-header">
+    <div className="modal-overlayAA" onClick={onClose}>
+      <div className="modal-contentAA" onClick={(e) => e.stopPropagation()}>
+        <h3 className="modal-headerAA">
           {mode === 'view' ? 'View Item Details' : 'Update Item'}
         </h3>
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-messageAA">{error}</div>}
         <form onSubmit={onSubmit}>
-          <div className="form-grid">
+          <div className="form-gridAA">
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               placeholder="Name" 
               name="name" 
               value={form.name || ''} 
@@ -171,7 +200,7 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
               disabled={mode === 'view'} 
             />
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               placeholder="Description" 
               name="description" 
               value={form.description || ''} 
@@ -179,7 +208,7 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
               disabled={mode === 'view'} 
             />
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               placeholder="SKU" 
               name="SKU" 
               value={form.SKU || ''} 
@@ -187,7 +216,7 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
               disabled={mode === 'view'} 
             />
             <select 
-              className="form-select" 
+              className="form-selectAA" 
               name="type" 
               value={form.type || 'Fresh'} 
               onChange={onChange} 
@@ -198,7 +227,7 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
               <option>Imported</option>
             </select>
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               type="number" 
               placeholder="Price" 
               name="price" 
@@ -207,7 +236,7 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
               disabled={mode === 'view'} 
             />
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               type="number" 
               placeholder="Quantity" 
               name="quantity" 
@@ -216,7 +245,7 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
               disabled={mode === 'view'} 
             />
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               type="number" 
               placeholder="Stock Threshold" 
               name="stockThreshold" 
@@ -225,15 +254,15 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
               disabled={mode === 'view'} 
             />
             {/* Image Upload Section */}
-            <div className="image-upload-section">
-              <label className="image-upload-label">Product Image</label>
+            <div className="image-upload-sectionAA">
+              <label className="image-upload-labelAA">Product Image</label>
               
               {/* Image Preview */}
               {imagePreview && (
-                <div className="image-preview-container">
-                  <img src={imagePreview} alt="Preview" className="image-preview" />
+                <div className="image-preview-containerAA">
+                  <img src={imagePreview} alt="Preview" className="image-previewAA" />
                   {mode !== 'view' && (
-                    <button type="button" className="remove-image-btn" onClick={removeImage}>
+                    <button type="button" className="remove-image-btnAA" onClick={removeImage}>
                       ✕
                     </button>
                   )}
@@ -242,37 +271,38 @@ const UpdateItem = ({ data, onClose, onSaved }) => {
               
               {/* File Upload - Only show in edit mode */}
               {mode !== 'view' && (
-                <div className="file-upload-container">
+                <div className="file-upload-containerAA">
                   <input
                     type="file"
                     id="image-upload"
                     accept="image/*"
                     onChange={handleImageUpload}
-                    className="file-input"
+                    className="file-inputAA"
                     disabled={uploading}
                   />
-                  <label htmlFor="image-upload" className="file-upload-label">
+                  <label htmlFor="image-upload" className="file-upload-labelAA">
                     {uploading ? 'Processing...' : '📁 Upload New Image from Laptop'}
                   </label>
                 </div>
               )}
             </div>
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               type="date" 
               placeholder="Expiry Date" 
               name="expiryDate" 
               value={(form.expiryDate || '').slice(0,10)} 
               onChange={onChange} 
+              min={new Date().toISOString().split('T')[0]}
               disabled={mode === 'view'} 
             />
           </div>
-          <div className="form-actions">
-            <button type="button" className="close-btn" onClick={onClose}>
-              Close
+          <div className="form-actionsAA">
+            <button type="button" className="close-btnAA" onClick={onClose}>
+              {mode === 'view' ? 'Close' : 'Cancel'}
             </button>
             {mode !== 'view' && (
-              <button type="submit" className="save-btn" disabled={submitting}>
+              <button type="submit" className="save-btnAA" disabled={submitting}>
                 {submitting ? 'Updating...' : 'Update Item'}
               </button>
             )}

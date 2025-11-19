@@ -22,7 +22,23 @@ const AddItem = ({ onClose, onSaved, sellerEmail }) => {
   const [uploading, setUploading] = useState(false)
   const [imagePreview, setImagePreview] = useState(null)
   
-  const onChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
+  const onChange = (e) => {
+    const { name, value } = e.target
+    
+    // Date validation for expiry date
+    if (name === 'expiryDate' && value) {
+      const selectedDate = new Date(value)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset time to start of day
+      
+      if (selectedDate < today) {
+        setError('Expiry date cannot be in the past. Please select a future date.')
+        return
+      }
+    }
+    
+    setForm((p) => ({ ...p, [name]: value }))
+  }
 
   // Handle image upload from laptop
   const handleImageUpload = async (e) => {
@@ -127,6 +143,19 @@ const AddItem = ({ onClose, onSaved, sellerEmail }) => {
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    
+    // Validate expiry date before submission
+    if (form.expiryDate) {
+      const selectedDate = new Date(form.expiryDate)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      if (selectedDate < today) {
+        setError('Expiry date cannot be in the past. Please select a future date.')
+        return
+      }
+    }
+    
     try {
       setSubmitting(true)
       
@@ -164,14 +193,14 @@ const AddItem = ({ onClose, onSaved, sellerEmail }) => {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h3 className="modal-header">Add New Item</h3>
-        {error && <div className="error-message">{error}</div>}
+    <div className="modal-overlayAA" onClick={onClose}>
+      <div className="modal-contentAA" onClick={(e) => e.stopPropagation()}>
+        <h3 className="modal-headerAA">Add New Item</h3>
+        {error && <div className="error-messageAA">{error}</div>}
         <form onSubmit={onSubmit}>
-          <div className="form-grid">
+          <div className="form-gridAA">
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               placeholder="Name" 
               name="name" 
               value={form.name} 
@@ -179,27 +208,27 @@ const AddItem = ({ onClose, onSaved, sellerEmail }) => {
               required 
             />
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               placeholder="Description" 
               name="description" 
               value={form.description} 
               onChange={onChange} 
             />
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               placeholder="SKU" 
               name="SKU" 
               value={form.SKU} 
               onChange={onChange} 
               required 
             />
-            <select className="form-select" name="type" value={form.type} onChange={onChange}>
+            <select className="form-selectAA" name="type" value={form.type} onChange={onChange}>
               <option>Fresh</option>
               <option>Frozen</option>
               <option>Imported</option>
             </select>
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               type="number" 
               placeholder="Price" 
               name="price" 
@@ -208,7 +237,7 @@ const AddItem = ({ onClose, onSaved, sellerEmail }) => {
               required 
             />
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               type="number" 
               placeholder="Quantity" 
               name="quantity" 
@@ -217,7 +246,7 @@ const AddItem = ({ onClose, onSaved, sellerEmail }) => {
               required 
             />
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               type="number" 
               placeholder="Stock Threshold" 
               name="stockThreshold" 
@@ -226,49 +255,50 @@ const AddItem = ({ onClose, onSaved, sellerEmail }) => {
               required 
             />
             {/* Image Upload Section */}
-            <div className="image-upload-section">
-              <label className="image-upload-label">Product Image (Optional)</label>
+            <div className="image-upload-sectionAA">
+              <label className="image-upload-labelAA">Product Image (Optional)</label>
               
               {/* Image Preview */}
               {imagePreview && (
-                <div className="image-preview-container">
-                  <img src={imagePreview} alt="Preview" className="image-preview" />
-                  <button type="button" className="remove-image-btn" onClick={removeImage}>
+                <div className="image-preview-containerAA">
+                  <img src={imagePreview} alt="Preview" className="image-previewAA" />
+                  <button type="button" className="remove-image-btnAA" onClick={removeImage}>
                     ✕
                   </button>
                 </div>
               )}
               
               {/* File Upload */}
-              <div className="file-upload-container">
+              <div className="file-upload-containerAA">
                 <input
                   type="file"
                   id="image-upload"
                   accept="image/*"
                   onChange={handleImageUpload}
-                  className="file-input"
+                  className="file-inputAA"
                   disabled={uploading}
                 />
-                <label htmlFor="image-upload" className="file-upload-label">
+                <label htmlFor="image-upload" className="file-upload-labelAA">
                   {uploading ? 'Processing...' : '📁 Upload Image from Laptop'}
                 </label>
               </div>
             </div>
             <input 
-              className="form-input" 
+              className="form-inputAA" 
               type="date" 
               placeholder="Expiry Date" 
               name="expiryDate" 
               value={form.expiryDate} 
               onChange={onChange} 
+              min={new Date().toISOString().split('T')[0]}
               required 
             />
           </div>
-          <div className="form-actions">
-            <button type="button" className="cancel-btn" onClick={onClose}>
+          <div className="form-actionsAA">
+            <button type="button" className="cancel-btnAA" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="save-btn" disabled={submitting}>
+            <button type="submit" className="save-btnAA" disabled={submitting}>
               {submitting ? 'Saving...' : 'Save Item'}
             </button>
           </div>

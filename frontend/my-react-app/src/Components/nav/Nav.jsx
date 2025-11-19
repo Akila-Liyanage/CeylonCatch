@@ -21,8 +21,8 @@ const Nav = () => {
   const searchRef = useRef(null);
   const inputRef = useRef(null);
 
-  const navLinks = ["Home", "About Us", "Service", "Pages", "Contact Us"];
-  const pagesLinks = ["Blog", "Blog Details", "Portfolio", "Contact"];
+  const navLinks = ["Home", "About Us", "Shop", "Pages", "Contact Us"];
+  const pagesLinks = ["Inventory", "Orders", "Bid", "Contact"];
   const suggestions = [
     "Fresh Tuna",
     "Salmon Fillet",
@@ -192,14 +192,14 @@ const Nav = () => {
                       variants={menuVariants}
                     >
                       {pagesLinks.map((p, pi) => (
-                        <a
+                        <Link
                           key={pi}
-                          href="#"
+                          to={p === 'Inventory' ? '/inventory' : p === 'Orders' ? '/orders' : p === 'Bid' ? '/items' : '#'}
                           className="dropdown-item"
-                          onClick={(e) => { e.preventDefault(); setActiveIndex(index); setIsOpen(false); }}
+                          onClick={() => { setActiveIndex(index); setIsOpen(false); }}
                         >
                           {p}
-                        </a>
+                        </Link>
                       ))}
                     </motion.div>
                   )}
@@ -211,8 +211,8 @@ const Nav = () => {
           return (
             <Link
               key={link}
-              to={link === 'Home' ? '/' : '#'}
-              className={location.pathname === '/' && link === 'Home' ? 'active' : ''}
+              to={link === 'Home' ? '/' : link === 'Shop' ? '/shop' : '#'}
+              className={location.pathname === '/' && link === 'Home' ? 'active' : location.pathname === '/shop' && link === 'Shop' ? 'active' : ''}
               onClick={() => setActiveIndex(index)}
             >
               {link}
